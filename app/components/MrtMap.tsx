@@ -215,7 +215,7 @@ export default function MrtMap() {
     if (!selectedStationId) return null;
     const station = STATIONS.find((s) => s.id === selectedStationId);
     const value = TOD_DATA[station?.id ?? ""]?.[selectedYear] ?? "-";
-    return station ? { ...station, value } : null;
+    return station ? { ...station, value: String(value) } : null;
   }, [selectedStationId, selectedYear]);
 
   // 年份選項資料
