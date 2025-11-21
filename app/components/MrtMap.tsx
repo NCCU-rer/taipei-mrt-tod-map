@@ -358,20 +358,20 @@ export default function MrtMap() {
       {/* 左上角資訊面板 */}
       <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-gray-100 z-10 w-[320px] overflow-hidden flex flex-col max-h-[calc(100%-2rem)]">
         <div className="p-5 border-b border-gray-100">
-          <h3 className="text-gray-400 text-xs font-bold tracking-wider uppercase mb-2 flex items-center gap-2">
+          {/* <h3 className="text-gray-400 text-xs font-bold tracking-wider uppercase mb-2 flex items-center gap-2">
             <Filter className="w-3 h-3" />
             站點分析
-          </h3>
+          </h3> */}
 
           {currentStationInfo ? (
             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
               <div className="flex justify-between items-end mb-4">
                 <div className="text-3xl font-black text-gray-800">
-                  {currentStationInfo.name}
+                  {currentStationInfo.name + "站"}
                 </div>
-                <div className="text-xs text-gray-400 font-mono mb-1">
+                {/* <div className="text-xs text-gray-400 font-mono mb-1">
                   {currentStationInfo.id}
-                </div>
+                </div> */}
               </div>
 
               {/* 關鍵指標卡片 */}
@@ -379,8 +379,8 @@ export default function MrtMap() {
                 <div className="grid grid-cols-2 gap-2 mb-4">
                   <div className="col-span-2 bg-blue-50 rounded-lg p-3 border border-blue-100">
                     <div className="flex items-center gap-1.5 text-blue-600 mb-1">
-                      <Activity className="w-3.5 h-3.5" />
-                      <span className="text-xs font-bold">TOD 整體分數</span>
+                      {/* <Activity className="w-3.5 h-3.5" /> */}
+                      <span className="text-xs font-bold">TOD 指數</span>
                     </div>
                     <div className="text-3xl font-bold text-blue-700 font-mono">
                       {currentDetails.score != null
@@ -390,7 +390,7 @@ export default function MrtMap() {
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
                     <div className="flex items-center gap-1.5 text-gray-500 mb-1">
-                      <Home className="w-3.5 h-3.5" />
+                      {/* <Home className="w-3.5 h-3.5" /> */}
                       <span className="text-xs font-bold">交易量</span>
                     </div>
                     <div className="text-xl font-bold text-gray-700 font-mono">
@@ -404,7 +404,7 @@ export default function MrtMap() {
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
                     <div className="flex items-center gap-1.5 text-gray-500 mb-1">
-                      <DollarSign className="w-3.5 h-3.5" />
+                      {/* <DollarSign className="w-3.5 h-3.5" /> */}
                       <span className="text-xs font-bold">平均單價</span>
                     </div>
                     <div className="text-xl font-bold text-gray-700 font-mono">
