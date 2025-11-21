@@ -499,7 +499,8 @@ export default function MrtMap() {
         <g fill="none" strokeWidth="10" style={{ pointerEvents: "none" }}>
           {/* 淡水信義線 (紅線 R) */}
           <path
-            d="m 59.710902 103.2889 h 405 c 75 0 75 0 75 75 v 570 h 525"
+            // d="m 59.710902 103.2889 h 405 c 75 0 75 0 75 75 v 570 h 525"
+            d="m 250.710902 103.2889 h 215 c 75 0 75 0 75 75 v 570 h 525"
             stroke="#d12d33"
             style={{
               opacity:
@@ -510,7 +511,8 @@ export default function MrtMap() {
 
           {/* 板南線 (藍線 BL) */}
           <path
-            d="m 89.7109 943.2889 l 280 -280 c 15 -15 25 -15 55 -15 h 800"
+            // d="m 89.7109 943.2889 l 280 -280 c 15 -15 25 -15 55 -15 h 800"
+            d="m 369.7109 663.2889 l 10 -5 c 15 -15 25 -15 55 -15 h 800"
             stroke="#0072c6"
             style={{
               opacity:
@@ -521,7 +523,8 @@ export default function MrtMap() {
 
           {/* 松山新店線 (綠線 G) */}
           <path
-            d="m 1069.7109 553.2889 h -605 c -17.59453 0 -40 22.40547 -40 40 v 125 c 0 14.26086 15.73915 30 30 30 h 85 l 110 110 c 7.35863 7.35863 15 18.39002 15 25 v 220"
+            // d="m 1069.7109 553.2889 h -605 c -17.59453 0 -40 22.40547 -40 40 v 125 c 0 14.26086 15.73915 30 30 30 h 85 l 110 110 c 7.35863 7.35863 15 18.39002 15 25 v 220"
+            d="m 1069.7109 553.2889 h -605 c -17.59453 0 -40 22.40547 -40 40 v 125 c 0 14.26086 15.73915 30 30 30 h 85 l 110 110 c 7.35863 7.35863 15 18.39002 15 25 v 80"
             stroke="#007c59"
             style={{
               opacity:
@@ -539,8 +542,9 @@ export default function MrtMap() {
               transition: "opacity 0.3s ease-in-out",
             }}
           >
-            <path d="m 409.7109 983.28889 l 235 -234.99999 v -270 c 0 -20 -10 -30 -30 -30 h -180 l -365 365" />
-            <path d="M 434.73522,447.69034 209.7109,223.2889" />
+            <path d="m 592 800 l 52 -50 v -270 c 0 -20 -10 -30 -30 -30 h -180" />
+            {/* <path d="m 409.7109 983.28889 l 235 -234.99999 v -270 c 0 -20 -10 -30 -30 -30 h -180 l -365 365" /> */}
+            {/* <path d="M 434.73522,447.69034 209.7109,223.2889" /> */}
           </g>
 
           {/* 文湖線 (棕線 BR) */}
@@ -555,7 +559,7 @@ export default function MrtMap() {
           />
 
           {/* 環狀線 (黃線 Y) */}
-          <path
+          {/* <path
             d="m 664.7109 1023.2889 h -45"
             stroke="#cce226"
             style={{
@@ -563,7 +567,7 @@ export default function MrtMap() {
                 selectedLine === "all" || selectedLine === "Y" ? 1 : 0.15,
               transition: "opacity 0.3s ease-in-out",
             }}
-          />
+          /> */}
 
           {/* 其他輔助線段 */}
           <path
@@ -576,9 +580,31 @@ export default function MrtMap() {
           />
         </g>
 
+        {/* {STATIONS.map((station) => {
+          const val = getTodValue(station.id);
+          const isDimmed = !checkStationInLine(station, selectedLine);
+          return (
+            <StationNode
+              key={station.id}
+              station={station}
+              todValue={val}
+              isSelected={selectedStationId === station.id}
+              isDimmed={isDimmed}
+              onClick={handleStationClick}
+            />
+          );
+        })} */}
         {STATIONS.map((station) => {
           const val = getTodValue(station.id);
           const isDimmed = !checkStationInLine(station, selectedLine);
+
+          // 🔥 檢查是否有任何年份/環域的資料
+          const stationName = station.name.replace("站", "");
+          const hasAnyData = TOD_DATA[stationName] !== undefined;
+
+          // 🔥 如果沒有資料，不渲染這個站點
+          if (!hasAnyData) return null;
+
           return (
             <StationNode
               key={station.id}
