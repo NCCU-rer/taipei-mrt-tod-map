@@ -1,12 +1,53 @@
 // Project/tod-widget/app/components/DetailPanel.tsx
+
 import {
   X,
   TrendingUp,
   DollarSign,
   Activity,
   BarChart3,
-  AlertCircle, // 🔥 新增
+  AlertCircle,
 } from "lucide-react";
+
+// 🔥 補上缺失的 Recharts 引用
+import {
+  ResponsiveContainer,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+} from "recharts";
+
+// --- 🔥 新增型別定義 (Type Definitions) ---
+
+interface Station {
+  name: string;
+  // 如果 station 有其他欄位(如 id, lat, lng)也可以加在這裡，但目前只用到 name
+}
+
+interface RadarData {
+  subject: string;
+  value: number;
+}
+
+interface DetailInfo {
+  count: number | null;
+  price: number | null;
+  score: number;
+  radar: RadarData[];
+  raw: Record<string, number>; // 表示 key 是字串，value 是數字的物件
+}
+
+interface DetailPanelProps {
+  station: Station;
+  details: DetailInfo;
+  selectedBuffer: number; // 假設 buffer 是數字 (如 500, 800)
+  selectedYear: number;
+  onClose: () => void;
+}
+
+// --- 組件本體 ---
 
 export default function DetailPanel({
   station,
@@ -75,7 +116,7 @@ export default function DetailPanel({
                 建物單價
               </div>
               <div className="text-2xl font-bold text-gray-800">
-                {(details.price / 10000).toFixed(1)}
+                {(details.price! / 10000).toFixed(1)}
               </div>
               <div className="text-xs text-gray-500 mt-1">萬元/坪</div>
             </div>
