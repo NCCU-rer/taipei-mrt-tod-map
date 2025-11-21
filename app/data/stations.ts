@@ -38,6 +38,7 @@ export const STATIONS: StationData[] = [
     y: 448,
     labelPosition: "right",
     labelOffset: { x: 15, y: 15 },
+    lines: ["R", "O"], // 紅線、橘線轉乘
   },
   { id: "R12", name: "雙連", x: 540, y: 495, labelPosition: "left" },
   {
@@ -47,6 +48,7 @@ export const STATIONS: StationData[] = [
     y: 550,
     labelPosition: "bottom",
     labelOffset: { x: -25, y: 25 },
+    lines: ["R", "G"], // 紅線、綠線轉乘
   },
   {
     id: "R10",
@@ -55,6 +57,7 @@ export const STATIONS: StationData[] = [
     y: 645,
     labelPosition: "left",
     labelOffset: { x: -20, y: -20 },
+    lines: ["R", "BL"], // 紅線、藍線轉乘
   },
   { id: "R09", name: "台大醫院", x: 540, y: 699, labelPosition: "left" },
   {
@@ -64,6 +67,7 @@ export const STATIONS: StationData[] = [
     y: 746,
     labelPosition: "left",
     labelOffset: { x: -15, y: 20 },
+    lines: ["R", "G"], // 紅線、綠線轉乘
   },
   {
     id: "R07",
@@ -72,6 +76,7 @@ export const STATIONS: StationData[] = [
     y: 747,
     labelPosition: "top",
     labelOffset: { x: 25, y: 25 },
+    lines: ["R", "O"], // 紅線、橘線轉乘
   },
   {
     id: "R06",
@@ -88,6 +93,7 @@ export const STATIONS: StationData[] = [
     y: 747,
     labelPosition: "top",
     labelOffset: { x: 25, y: 25 },
+    lines: ["R", "BR"], // 紅線、文湖線轉乘
   },
   { id: "R04", name: "信義安和", x: 850, y: 747, labelPosition: "top" },
   { id: "R03", name: "台北101/世貿", x: 952, y: 747, labelPosition: "top" },
@@ -111,6 +117,7 @@ export const STATIONS: StationData[] = [
     y: 645,
     labelPosition: "bottom",
     labelOffset: { x: 25, y: 25 },
+    lines: ["BL", "G"], // 藍線、綠線轉乘
   },
   { id: "BL12", name: "善導寺", x: 595, y: 648, labelPosition: "top" },
   {
@@ -120,6 +127,7 @@ export const STATIONS: StationData[] = [
     y: 648,
     labelPosition: "bottom",
     // labelOffset: { x: -35, y: 30 },
+    lines: ["BL", "O"], // 藍線、橘線轉乘
   },
   {
     id: "BL14",
@@ -128,6 +136,7 @@ export const STATIONS: StationData[] = [
     y: 647,
     labelPosition: "bottom",
     // labelOffset: { x: -35, y: 25 },
+    lines: ["BL", "BR"], // 藍線、文湖線轉乘
   },
   { id: "BL15", name: "忠孝敦化", x: 810, y: 647, labelPosition: "top" },
   { id: "BL16", name: "國父紀念館", x: 865, y: 647, labelPosition: "bottom" },
@@ -136,7 +145,14 @@ export const STATIONS: StationData[] = [
   { id: "BL19", name: "後山埤", x: 1047, y: 646, labelPosition: "top" },
   { id: "BL20", name: "昆陽", x: 1101, y: 646, labelPosition: "bottom" },
   { id: "BL21", name: "南港", x: 1160, y: 646, labelPosition: "top" },
-  { id: "BL22", name: "南港展覽館", x: 1226, y: 646, labelPosition: "bottom" },
+  {
+    id: "BL22",
+    name: "南港展覽館",
+    x: 1226,
+    y: 646,
+    labelPosition: "bottom",
+    lines: ["BL", "BR"], // 藍線、文湖線轉乘
+  },
 
   // --- 綠線 (松山新店) ---
   { id: "G19", name: "松山", x: 1062, y: 550, labelPosition: "bottom" },
@@ -149,6 +165,7 @@ export const STATIONS: StationData[] = [
     y: 552,
     labelPosition: "bottom",
     labelOffset: { x: -35, y: 25 },
+    lines: ["G", "BR"], // 綠線、文湖線轉乘
   },
   {
     id: "G15",
@@ -157,10 +174,18 @@ export const STATIONS: StationData[] = [
     y: 552,
     labelPosition: "bottom",
     labelOffset: { x: -35, y: 25 },
+    lines: ["G", "O"], // 綠線、橘線轉乘
   },
   { id: "G12", name: "北門", x: 437, y: 566, labelPosition: "left" },
   { id: "G11", name: "小南門", x: 432, y: 735, labelPosition: "left" },
-  { id: "G09", name: "古亭", x: 592, y: 800, labelPosition: "left" },
+  {
+    id: "G09",
+    name: "古亭",
+    x: 592,
+    y: 800,
+    labelPosition: "left",
+    lines: ["G", "O"], // 綠線、橘線轉乘
+  },
   { id: "G08", name: "台電大樓", x: 630, y: 839, labelPosition: "right" },
   { id: "G07", name: "公館", x: 665, y: 876, labelPosition: "right" },
   { id: "G06", name: "萬隆", x: 665, y: 915, labelPosition: "right" },

@@ -1,23 +1,40 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import {
+  Radar,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  ResponsiveContainer,
+} from "recharts";
 
-// 導入類型定義
+// 導入類型與資料
 import { StationData } from "../types/mrt";
-
-// 導入資料
 import { STATIONS } from "../data/stations";
 import { TOD_DATA } from "../data/todData";
+import { TOD_DETAILS } from "../data/todDetails"; // 新增：詳細資料
 import { LINES, getLineColor } from "../data/lines";
 
 // 導入圖示
-import { Calendar, ChevronDown } from "lucide-react";
+import {
+  Calendar,
+  ChevronDown,
+  Filter,
+  MapPin,
+  Train,
+  Home,
+  DollarSign,
+  Activity,
+} from "lucide-react";
 
-// --- 單個站點元件 ---
+// --- 單個站點元件 (保持不變) ---
 interface StationNodeProps {
   station: StationData;
   todValue: number | string;
   isSelected: boolean;
+  isDimmed: boolean;
   onClick: (station: StationData) => void;
 }
 
@@ -25,6 +42,7 @@ const StationNode: React.FC<StationNodeProps> = ({
   station,
   todValue,
   isSelected,
+  isDimmed,
   onClick,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -43,18 +61,11 @@ const StationNode: React.FC<StationNodeProps> = ({
   const displayValue = todValue;
   const valueColor = hasData ? "#333" : "#999";
 
-  // 根據 labelPosition 計算站名位置（支援自定義偏移量）
   const labelPosition = station.labelPosition || "bottom";
   const getLabelOffset = () => {
-    // 如果有自定義偏移量，直接使用
-    if (station.labelOffset) {
-      return station.labelOffset;
-    }
-
-    // 否則使用預設偏移量
-    const verticalOffset = 28; // 上下偏移
-    const horizontalOffset = 28; // 左右偏移
-
+    if (station.labelOffset) return station.labelOffset;
+    const verticalOffset = 28;
+    const horizontalOffset = 28;
     switch (labelPosition) {
       case "top":
         return { x: 0, y: -verticalOffset };
@@ -88,7 +99,11 @@ const StationNode: React.FC<StationNodeProps> = ({
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      style={{ cursor: "pointer" }}
+      style={{
+        cursor: "pointer",
+        opacity: isDimmed ? 0.1 : 1,
+        transition: "opacity 0.3s ease-in-out",
+      }}
     >
       <circle r={25} fill="transparent" />
       <circle
@@ -138,32 +153,42 @@ const StationNode: React.FC<StationNodeProps> = ({
   );
 };
 
-// --- 自定義 Select 元件 ---
+// --- 自定義 Select 元件 (保持不變) ---
 interface CustomSelectProps {
   value: string;
   onChange: (value: string) => void;
-  options: Array<{ value: string; label: string; year: string }>;
+  options: Array<{ value: string; label: string; subLabel?: string }>;
+  icon?: React.ReactNode;
+  label: string;
 }
 
 const CustomSelect: React.FC<CustomSelectProps> = ({
   value,
   onChange,
   options,
+  icon,
+  label,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const selectedOption = options.find((opt) => opt.value === value);
 
   return (
-    <div className="relative">
+    <div className="relative group">
+      <div className="flex items-center gap-2 mb-1 ml-1">
+        {icon}
+        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+          {label}
+        </span>
+      </div>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-32 h-9 px-3 bg-white border border-gray-300 rounded-md flex items-center justify-between hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all"
+        className="w-40 h-10 px-3 bg-white border border-gray-200 rounded-lg flex items-center justify-between hover:border-blue-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all"
       >
-        <span className="text-sm font-medium text-gray-700">
+        <span className="text-sm font-medium text-gray-700 truncate">
           {selectedOption?.label}
         </span>
         <ChevronDown
-          className={`w-4 h-4 text-gray-500 transition-transform ${
+          className={`w-4 h-4 text-gray-400 transition-transform ${
             isOpen ? "rotate-180" : ""
           }`}
         />
@@ -172,10 +197,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 z-10"
+            className="fixed inset-0 z-30"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute top-full mt-1 w-40 bg-white border border-gray-200 rounded-md shadow-xl z-20 overflow-hidden">
+          <div className="absolute top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-xl z-40 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
             {options.map((option) => (
               <button
                 key={option.value}
@@ -183,14 +208,20 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                   onChange(option.value);
                   setIsOpen(false);
                 }}
-                className={`w-full px-3 py-2 text-left hover:bg-blue-50 transition-colors flex items-center justify-between ${
-                  value === option.value ? "bg-blue-50" : ""
+                className={`w-full px-4 py-2.5 text-left hover:bg-blue-50 transition-colors flex flex-col ${
+                  value === option.value
+                    ? "bg-blue-50 border-l-4 border-blue-500"
+                    : "border-l-4 border-transparent"
                 }`}
               >
                 <span className="text-sm font-medium text-gray-700">
                   {option.label}
                 </span>
-                <span className="text-xs text-gray-500">({option.year})</span>
+                {option.subLabel && (
+                  <span className="text-xs text-gray-400 mt-0.5">
+                    {option.subLabel}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -206,87 +237,244 @@ export default function MrtMap() {
     null
   );
   const [selectedYear, setSelectedYear] = useState<string>("112");
+  const [selectedBuffer, setSelectedBuffer] = useState<string>("300");
+  const [selectedLine, setSelectedLine] = useState<string>("all");
+
+  const yearOptions = [
+    { value: "112", label: "112 年度", subLabel: "2023" },
+    { value: "111", label: "111 年度", subLabel: "2022" },
+    { value: "110", label: "110 年度", subLabel: "2021" },
+  ];
+
+  const bufferOptions = [
+    { value: "150", label: "150 公尺", subLabel: "步行約 2-3 分鐘" },
+    { value: "300", label: "300 公尺", subLabel: "步行約 4-5 分鐘" },
+  ];
+
+  const lineOptions = [
+    { value: "all", label: "所有路線", subLabel: "顯示全路網" },
+    ...LINES.map((line) => ({
+      value: line.id,
+      label: line.name,
+      subLabel: line.id,
+    })),
+  ];
+
+  // 在 MrtMap.tsx 中修改這個函數
+  const getTodValue = (stationId: string) => {
+    // 找到站點資訊
+    const station = STATIONS.find((s) => s.id === stationId);
+    if (!station) return "-";
+
+    // 使用站名（去掉「站」字）查詢
+    const stationName = station.name.replace("站", "");
+
+    // 🔥 新的查詢邏輯：使用 "年份_環域" 作為 key
+    const key = `${selectedYear}_${selectedBuffer}`;
+    const value = TOD_DATA[stationName]?.[key];
+
+    return value !== undefined ? value.toFixed(1) : "-";
+  };
 
   const handleStationClick = (station: StationData) => {
     setSelectedStationId(station.id);
   };
 
+  // 取得當前選中站點的詳細 TOD 資料
+  // 在 MrtMap.tsx 中修改這個 useMemo
+  const currentDetails = useMemo(() => {
+    if (!selectedStationId) return null;
+
+    // 找到站點資訊
+    const station = STATIONS.find((s) => s.id === selectedStationId);
+    if (!station) return null;
+
+    // 使用站名（去掉「站」字）查詢
+    const stationName = station.name.replace("站", "");
+
+    // 🔥 新的查詢邏輯：年份 → 環域
+    const details = TOD_DETAILS[stationName]?.[selectedYear]?.[selectedBuffer];
+
+    return details || null;
+  }, [selectedStationId, selectedYear, selectedBuffer]); // 🔥 加入 selectedYear 依賴
+
   const currentStationInfo = useMemo(() => {
     if (!selectedStationId) return null;
     const station = STATIONS.find((s) => s.id === selectedStationId);
-    const value = TOD_DATA[station?.id ?? ""]?.[selectedYear] ?? "-";
+    const value = getTodValue(station?.id ?? "");
     return station ? { ...station, value: String(value) } : null;
-  }, [selectedStationId, selectedYear]);
+  }, [selectedStationId, selectedYear, selectedBuffer]);
 
-  // 年份選項資料
-  const yearOptions = [
-    { value: "112", label: "112 年度", year: "2023" },
-    { value: "111", label: "111 年度", year: "2022" },
-    { value: "110", label: "110 年度", year: "2021" },
-  ];
+  const checkStationInLine = (station: StationData, lineId: string) => {
+    if (lineId === "all") return true;
+    if (station.lines && station.lines.includes(lineId)) return true;
+    if (station.id.startsWith(lineId)) return true;
+    return false;
+  };
+
+  // 格式化價格
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("zh-TW", { maximumFractionDigits: 0 }).format(
+      price
+    );
+  };
 
   return (
     <div className="relative w-full h-full max-w-[1369px] mx-auto bg-white rounded-xl overflow-hidden shadow-lg border border-gray-200">
-      {/* 1. 優化後的年份選擇控制列 */}
-      <div className="absolute top-4 right-4 z-20">
-        <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 p-3">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-gray-600">
-              <Calendar className="w-4 h-4" />
-              <span className="text-sm font-medium">資料年度</span>
-            </div>
-            <CustomSelect
-              value={selectedYear}
-              onChange={setSelectedYear}
-              options={yearOptions}
-            />
-          </div>
+      {/* 右上角控制面板 */}
+      <div className="absolute top-4 right-4 z-20 flex flex-col gap-3">
+        <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-4 flex flex-col gap-4">
+          <CustomSelect
+            label="資料年度"
+            icon={<Calendar className="w-3.5 h-3.5" />}
+            value={selectedYear}
+            onChange={setSelectedYear}
+            options={yearOptions}
+          />
+          <div className="w-full h-px bg-gray-100" />
+          <CustomSelect
+            label="環域範圍"
+            icon={<MapPin className="w-3.5 h-3.5" />}
+            value={selectedBuffer}
+            onChange={setSelectedBuffer}
+            options={bufferOptions}
+          />
+          <div className="w-full h-px bg-gray-100" />
+          <CustomSelect
+            label="捷運路線"
+            icon={<Train className="w-3.5 h-3.5" />}
+            value={selectedLine}
+            onChange={setSelectedLine}
+            options={lineOptions}
+          />
         </div>
       </div>
 
-      {/* 2. 資訊面板 (左上) */}
-      <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm p-5 rounded-xl shadow-lg border border-gray-100 z-10 min-w-[220px]">
-        <h3 className="text-gray-400 text-xs font-bold tracking-wider uppercase mb-2">
-          站點資訊
-        </h3>
-        {currentStationInfo ? (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="text-3xl font-black text-gray-800 mb-1">
-              {currentStationInfo.name}
+      {/* 左上角資訊面板 */}
+      <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-gray-100 z-10 w-[320px] overflow-hidden flex flex-col max-h-[calc(100%-2rem)]">
+        <div className="p-5 border-b border-gray-100">
+          <h3 className="text-gray-400 text-xs font-bold tracking-wider uppercase mb-2 flex items-center gap-2">
+            <Filter className="w-3 h-3" />
+            站點分析
+          </h3>
+
+          {currentStationInfo ? (
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="flex justify-between items-end mb-4">
+                <div className="text-3xl font-black text-gray-800">
+                  {currentStationInfo.name}
+                </div>
+                <div className="text-xs text-gray-400 font-mono mb-1">
+                  {currentStationInfo.id}
+                </div>
+              </div>
+
+              {/* 關鍵指標卡片 */}
+              {currentDetails ? (
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                  <div className="col-span-2 bg-blue-50 rounded-lg p-3 border border-blue-100">
+                    <div className="flex items-center gap-1.5 text-blue-600 mb-1">
+                      <Activity className="w-3.5 h-3.5" />
+                      <span className="text-xs font-bold">TOD 整體分數</span>
+                    </div>
+                    <div className="text-3xl font-bold text-blue-700 font-mono">
+                      {currentDetails.score.toFixed(1)}
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                    <div className="flex items-center gap-1.5 text-gray-500 mb-1">
+                      <Home className="w-3.5 h-3.5" />
+                      <span className="text-xs font-bold">交易量</span>
+                    </div>
+                    <div className="text-xl font-bold text-gray-700 font-mono">
+                      {currentDetails.count}{" "}
+                      <span className="text-xs font-normal text-gray-400">
+                        件
+                      </span>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                    <div className="flex items-center gap-1.5 text-gray-500 mb-1">
+                      <DollarSign className="w-3.5 h-3.5" />
+                      <span className="text-xs font-bold">平均單價</span>
+                    </div>
+                    <div className="text-xl font-bold text-gray-700 font-mono">
+                      {formatPrice(currentDetails.price / 10000)}{" "}
+                      <span className="text-xs font-normal text-gray-400">
+                        萬/坪
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 bg-yellow-50 text-yellow-700 text-sm rounded-lg mb-4">
+                  尚無此範圍詳細數據
+                </div>
+              )}
+
+              {/* 雷達圖 */}
+              {currentDetails && (
+                <div className="w-full h-[240px] -ml-2">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart
+                      cx="50%"
+                      cy="50%"
+                      outerRadius="70%"
+                      data={currentDetails.radar}
+                    >
+                      <PolarGrid stroke="#e5e7eb" />
+                      <PolarAngleAxis
+                        dataKey="subject"
+                        tick={{ fill: "#6b7280", fontSize: 11 }}
+                      />
+                      <PolarRadiusAxis
+                        angle={30}
+                        domain={[0, 1]}
+                        tick={false}
+                        axisLine={false}
+                      />
+                      <Radar
+                        name={currentStationInfo.name}
+                        dataKey="value"
+                        stroke="#2563eb"
+                        strokeWidth={2}
+                        fill="#3b82f6"
+                        fillOpacity={0.5}
+                      />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-sm text-gray-500 font-medium">
-                TOD 指數 ({selectedYear}年)
-              </span>
-              <span
-                className={`text-2xl font-bold font-mono ${
-                  currentStationInfo.value === "-"
-                    ? "text-gray-400"
-                    : "text-blue-600"
-                }`}
-              >
-                {currentStationInfo.value}
-              </span>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3 text-gray-400">
+                <MapPin className="w-6 h-6" />
+              </div>
+              <p className="text-gray-500 font-medium">請選擇站點</p>
+              <p className="text-xs text-gray-400 mt-1">
+                點擊地圖圓點查看詳細 TOD 分析
+              </p>
             </div>
-            <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between text-xs text-gray-400">
-              <span>ID: {currentStationInfo.id}</span>
-            </div>
-          </div>
-        ) : (
-          <div className="text-gray-400 italic text-sm py-2">
-            點擊地圖圓點查看數據
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      {/* 3. 優化後的圖例 (Legend) - 右下角浮動面板 */}
+      {/* 右下角圖例 */}
       <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-gray-100 z-10">
         <h4 className="text-xs font-bold text-gray-400 uppercase mb-3 tracking-wider border-b border-gray-100 pb-1">
           捷運路線圖例
         </h4>
         <div className="grid grid-cols-2 gap-x-6 gap-y-2">
           {LINES.map((line) => (
-            <div key={line.id} className="flex items-center gap-2">
+            <div
+              key={line.id}
+              className={`flex items-center gap-2 transition-opacity duration-300 ${
+                selectedLine !== "all" && selectedLine !== line.id
+                  ? "opacity-30"
+                  : "opacity-100"
+              }`}
+            >
               <span
                 className="w-3 h-3 rounded-full shadow-sm"
                 style={{ backgroundColor: line.color }}
@@ -299,7 +487,7 @@ export default function MrtMap() {
         </div>
       </div>
 
-      {/* SVG 地圖 */}
+      {/* SVG 地圖 - 修改這裡！ */}
       <svg
         version="1.1"
         width="100%"
@@ -308,41 +496,96 @@ export default function MrtMap() {
         className="w-full h-full"
         onClick={() => setSelectedStationId(null)}
       >
-        {/* Layer 1: 原始 SVG 背景 */}
         <g fill="none" strokeWidth="10" style={{ pointerEvents: "none" }}>
-          <path d="m 449.7109 103.2889 v -49.999998" stroke="#f98e99" />
-          <path d="m 664.7109 1023.2889 h -45" stroke="#cce226" />
-          <path
-            d="m 1069.7109 553.2889 h -605 c -17.59453 0 -40 22.40547 -40 40 v 125 c 0 14.26086 15.73915 30 30 30 h 85 l 110 110 c 7.35863 7.35863 15 18.39002 15 25 v 220"
-            stroke="#007c59"
-          />
+          {/* 淡水信義線 (紅線 R) */}
           <path
             d="m 59.710902 103.2889 h 405 c 75 0 75 0 75 75 v 570 h 525"
             stroke="#d12d33"
+            style={{
+              opacity:
+                selectedLine === "all" || selectedLine === "R" ? 1 : 0.15,
+              transition: "opacity 0.3s ease-in-out",
+            }}
           />
+
+          {/* 板南線 (藍線 BL) */}
           <path
             d="m 89.7109 943.2889 l 280 -280 c 15 -15 25 -15 55 -15 h 800"
             stroke="#0072c6"
+            style={{
+              opacity:
+                selectedLine === "all" || selectedLine === "BL" ? 1 : 0.15,
+              transition: "opacity 0.3s ease-in-out",
+            }}
           />
+
+          {/* 松山新店線 (綠線 G) */}
           <path
-            d="m 1174.7109 943.2889 h -360.00008 c -34.28884 0 -59.99992 -40.71114 -59.99992 -75 v -445 c 0 -50 0 -50 55 -50 h 370 c 45 0 45 0 45 45 v 230"
-            stroke="#aa753f"
+            d="m 1069.7109 553.2889 h -605 c -17.59453 0 -40 22.40547 -40 40 v 125 c 0 14.26086 15.73915 30 30 30 h 85 l 110 110 c 7.35863 7.35863 15 18.39002 15 25 v 220"
+            stroke="#007c59"
+            style={{
+              opacity:
+                selectedLine === "all" || selectedLine === "G" ? 1 : 0.15,
+              transition: "opacity 0.3s ease-in-out",
+            }}
           />
-          <g stroke="#fca311">
+
+          {/* 中和新蘆線 (橘線 O) */}
+          <g
+            stroke="#fca311"
+            style={{
+              opacity:
+                selectedLine === "all" || selectedLine === "O" ? 1 : 0.15,
+              transition: "opacity 0.3s ease-in-out",
+            }}
+          >
             <path d="m 409.7109 983.28889 l 235 -234.99999 v -270 c 0 -20 -10 -30 -30 -30 h -180 l -365 365" />
             <path d="M 434.73522,447.69034 209.7109,223.2889" />
           </g>
+
+          {/* 文湖線 (棕線 BR) */}
+          <path
+            d="m 1174.7109 943.2889 h -360.00008 c -34.28884 0 -59.99992 -40.71114 -59.99992 -75 v -445 c 0 -50 0 -50 55 -50 h 370 c 45 0 45 0 45 45 v 230"
+            stroke="#aa753f"
+            style={{
+              opacity:
+                selectedLine === "all" || selectedLine === "BR" ? 1 : 0.15,
+              transition: "opacity 0.3s ease-in-out",
+            }}
+          />
+
+          {/* 環狀線 (黃線 Y) */}
+          <path
+            d="m 664.7109 1023.2889 h -45"
+            stroke="#cce226"
+            style={{
+              opacity:
+                selectedLine === "all" || selectedLine === "Y" ? 1 : 0.15,
+              transition: "opacity 0.3s ease-in-out",
+            }}
+          />
+
+          {/* 其他輔助線段 */}
+          <path
+            d="m 449.7109 103.2889 v -49.999998"
+            stroke="#f98e99"
+            style={{
+              opacity: selectedLine === "all" ? 1 : 0.15,
+              transition: "opacity 0.3s ease-in-out",
+            }}
+          />
         </g>
 
-        {/* Layer 2: 互動站點層 */}
         {STATIONS.map((station) => {
-          const val = TOD_DATA[station.id]?.[selectedYear] ?? "-";
+          const val = getTodValue(station.id);
+          const isDimmed = !checkStationInLine(station, selectedLine);
           return (
             <StationNode
               key={station.id}
               station={station}
               todValue={val}
               isSelected={selectedStationId === station.id}
+              isDimmed={isDimmed}
               onClick={handleStationClick}
             />
           );
