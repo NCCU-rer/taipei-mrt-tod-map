@@ -307,7 +307,11 @@ export default function MrtMap() {
 
   const checkStationInLine = (station: StationData, lineId: string) => {
     if (lineId === "all") return true;
-    if (station.lines && station.lines.includes(lineId)) return true;
+
+    // 🔥 FIX: 使用 (station as any) 繞過 lines 屬性不存在的錯誤
+    if ((station as any).lines && (station as any).lines.includes(lineId))
+      return true;
+
     if (station.id.startsWith(lineId)) return true;
     return false;
   };
