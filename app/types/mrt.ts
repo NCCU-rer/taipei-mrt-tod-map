@@ -14,6 +14,7 @@ export interface StationData {
   y: number;
   labelPosition?: LabelPosition; // 可選的站名位置，預設為 bottom
   labelOffset?: { x: number; y: number }; // 可選的自定義偏移量
+  lines?: string[]; // 🔥 添加這一行：站點所屬的路線列表
 }
 
 // 站點 TOD 資料結構
