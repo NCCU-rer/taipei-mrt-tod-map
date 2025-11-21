@@ -383,7 +383,9 @@ export default function MrtMap() {
                       <span className="text-xs font-bold">TOD 整體分數</span>
                     </div>
                     <div className="text-3xl font-bold text-blue-700 font-mono">
-                      {currentDetails.score.toFixed(1)}
+                      {currentDetails.score != null
+                        ? currentDetails.score.toFixed(1)
+                        : "N/A"}
                     </div>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
@@ -392,7 +394,9 @@ export default function MrtMap() {
                       <span className="text-xs font-bold">交易量</span>
                     </div>
                     <div className="text-xl font-bold text-gray-700 font-mono">
-                      {currentDetails.count}{" "}
+                      {currentDetails.count != null
+                        ? currentDetails.count
+                        : "N/A"}{" "}
                       <span className="text-xs font-normal text-gray-400">
                         件
                       </span>
@@ -404,7 +408,9 @@ export default function MrtMap() {
                       <span className="text-xs font-bold">平均單價</span>
                     </div>
                     <div className="text-xl font-bold text-gray-700 font-mono">
-                      {formatPrice(currentDetails.price / 10000)}{" "}
+                      {currentDetails.price != null
+                        ? formatPrice(currentDetails.price / 10000)
+                        : "N/A"}{" "}
                       <span className="text-xs font-normal text-gray-400">
                         萬/坪
                       </span>
