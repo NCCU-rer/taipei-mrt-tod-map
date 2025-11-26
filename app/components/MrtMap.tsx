@@ -92,6 +92,7 @@ interface StationNodeProps {
   onClick: (station: StationData) => void;
   selectedLine: string;
   rank?: number;
+  hasData: boolean;
 }
 
 const StationNode: React.FC<StationNodeProps> = ({
@@ -103,16 +104,16 @@ const StationNode: React.FC<StationNodeProps> = ({
   onClick,
   selectedLine,
   rank,
+  hasData,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
-  const hasData = displayValue !== "-";
   const radius = hasData ? 15 : 12;
-
-  const fill = hasData ? "#ffffff" : "#f0f0f0";
+  // 加深灰色站點的填充色
+  const fill = hasData ? "#ffffff" : "#999999";
   const strokeWidth = isSelected ? 3 : 2.5;
-
-  const valueColor = hasData ? "#333" : "#999";
+  // 加深灰色站點的文字顏色
+  const valueColor = hasData ? "#333" : "#666";
 
   const stationColors = getLineColors(station);
   const displayColors =
@@ -162,13 +163,13 @@ const StationNode: React.FC<StationNodeProps> = ({
       transform={`translate(${station.x}, ${station.y})`}
       onClick={(e) => {
         e.stopPropagation();
-        onClick(station);
+        if (hasData) onClick(station);
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
-        cursor: "pointer",
-        opacity: isDimmed ? 0.1 : 1,
+        cursor: hasData ? "pointer" : "default",
+        opacity: isDimmed ? 0.1 : hasData ? 1 : 0.5,
         transition: "opacity 0.3s ease-in-out",
       }}
     >
@@ -190,15 +191,21 @@ const StationNode: React.FC<StationNodeProps> = ({
       <circle
         r={radius}
         fill={fill}
-        stroke={finalColors.length > 1 ? `url(#${gradientId})` : finalColors[0]}
+        stroke={
+          hasData
+            ? finalColors.length > 1
+              ? `url(#${gradientId})`
+              : finalColors[0]
+            : "#777"
+        }
         strokeWidth={strokeWidth}
         style={{
           filter:
-            isSelected || isHovered
+            isSelected || (isHovered && hasData)
               ? "drop-shadow(0px 2px 4px rgba(0,0,0,0.3))"
               : "none",
           transition: "all 0.2s ease-out",
-          transform: isHovered ? "scale(1.1)" : "scale(1)",
+          transform: isHovered && hasData ? "scale(1.1)" : "scale(1)",
         }}
       />
 
@@ -213,7 +220,7 @@ const StationNode: React.FC<StationNodeProps> = ({
         {displayValue}
       </text>
 
-      {rank && rank <= 10 && (
+      {rank && rank <= 10 && hasData && (
         <g>
           <circle
             cx={radius - 3}
@@ -244,7 +251,7 @@ const StationNode: React.FC<StationNodeProps> = ({
         dy={
           labelPosition === "left" || labelPosition === "right" ? ".35em" : "0"
         }
-        fill={isSelected ? "#000" : "#555"}
+        fill={hasData ? (isSelected ? "#000" : "#555") : "#888"}
         fontSize={14}
         fontFamily="Noto Sans CJK TC Regular"
         fontWeight={isSelected ? "bold" : "normal"}
@@ -639,7 +646,7 @@ export default function MrtMap() {
                     </span>
                   </div>
                 </div>
-                <div className="bg-green-50 rounded-lg p-3 border border-green-100">
+                <div className="bg-green-50 rounded-lg p-3 border border-gray-100">
                   <div className="flex items-center gap-1.5 text-green-600 mb-1">
                     <DollarSign className="w-3.5 h-3.5" />
                     <span className="text-xs font-bold">平均單價</span>
@@ -867,7 +874,6 @@ export default function MrtMap() {
 
         {/* 手機版圖例 - 可收合 */}
         <div className="md:hidden absolute top-4 right-4 z-10">
-          {/* 收合時只顯示按鈕 */}
           {!isLegendOpen && (
             <button
               onClick={() => setIsLegendOpen(true)}
@@ -877,7 +883,6 @@ export default function MrtMap() {
             </button>
           )}
 
-          {/* 展開時顯示完整圖例 */}
           {isLegendOpen && (
             <div className="bg-white/95 backdrop-blur-sm p-3 rounded-xl shadow-lg border border-gray-200 max-w-[200px] animate-in slide-in-from-right duration-200">
               <div className="flex items-center justify-between mb-2">
@@ -932,99 +937,111 @@ export default function MrtMap() {
           )}
         </div>
 
-        {/* SVG 地圖 */}
-        <svg
-          version="1.1"
-          width="1369.96"
-          height="1104.26"
-          viewBox="0 0 1369.9617919921875 1104.26025390625"
-          className="w-full h-auto"
-          onClick={() => setSelectedStationId(null)}
-        >
-          <g fill="none" strokeWidth="10" style={{ pointerEvents: "none" }}>
-            <path
-              d="m 250.710902 103.2889 h 215 c 75 0 75 0 75 75 v 570 h 525"
-              stroke="#d12d33"
-              style={{
-                opacity:
-                  selectedLine === "all" || selectedLine === "R" ? 1 : 0.15,
-                transition: "opacity 0.3s ease-in-out",
-              }}
-            />
-            <path
-              d="m 369.7109 663.2889 l 10 -5 c 15 -15 25 -15 55 -15 h 800"
-              stroke="#0072c6"
-              style={{
-                opacity:
-                  selectedLine === "all" || selectedLine === "BL" ? 1 : 0.15,
-                transition: "opacity 0.3s ease-in-out",
-              }}
-            />
-            <path
-              d="m 1069.7109 553.2889 h -605 c -17.59453 0 -40 22.40547 -40 40 v 125 c 0 14.26086 15.73915 30 30 30 h 85 l 110 110 c 7.35863 7.35863 15 18.39002 15 25 v 80"
-              stroke="#007c59"
-              style={{
-                opacity:
-                  selectedLine === "all" || selectedLine === "G" ? 1 : 0.15,
-                transition: "opacity 0.3s ease-in-out",
-              }}
-            />
-            <g
-              stroke="#fca311"
-              style={{
-                opacity:
-                  selectedLine === "all" || selectedLine === "O" ? 1 : 0.15,
-                transition: "opacity 0.3s ease-in-out",
-              }}
-            >
-              <path d="m 592 800 l 52 -50 v -270 c 0 -20 -10 -30 -30 -30 h -180" />
+        {/* SVG 地圖容器 - 桌面版和手機版都居中 */}
+        <div className="w-full h-full flex items-center justify-center">
+          <svg
+            version="1.1"
+            viewBox="0 0 1369.96 1150"
+            className="w-full h-auto max-w-full max-h-full"
+            preserveAspectRatio="xMidYMid meet"
+            onClick={() => setSelectedStationId(null)}
+          >
+            <g fill="none" strokeWidth="10" style={{ pointerEvents: "none" }}>
+              <path
+                d="m 449.7109 103.2889 v -49.999998"
+                stroke="#f98e99"
+                style={{
+                  opacity:
+                    selectedLine === "all" || selectedLine === "R" ? 1 : 0.15,
+                  transition: "opacity 0.3s ease-in-out",
+                }}
+              ></path>
+              <path
+                d="m 664.7109 1023.2889 h -45"
+                stroke="#cce226"
+                style={{
+                  opacity:
+                    selectedLine === "all" || selectedLine === "G" ? 1 : 0.15,
+                  transition: "opacity 0.3s ease-in-out",
+                }}
+              ></path>
+              <path
+                d="m 1069.7109 553.2889 h -605 c -17.59453 0 -40 22.40547 -40 40 v 125 c 0 14.26086 15.73915 30 30 30 h 85 l 110 110 c 7.35863 7.35863 15 18.39002 15 25 v 220"
+                stroke="#007c59"
+                style={{
+                  opacity:
+                    selectedLine === "all" || selectedLine === "G" ? 1 : 0.15,
+                  transition: "opacity 0.3s ease-in-out",
+                }}
+              ></path>
+              <path
+                d="m 59.710902 103.2889 h 405 c 75 0 75 0 75 75 v 570 h 525"
+                stroke="#d12d33"
+                style={{
+                  opacity:
+                    selectedLine === "all" || selectedLine === "R" ? 1 : 0.15,
+                  transition: "opacity 0.3s ease-in-out",
+                }}
+              ></path>
+              <path
+                d="m 89.7109 943.2889 l 280 -280 c 15 -15 25 -15 55 -15 h 800"
+                stroke="#0072c6"
+                style={{
+                  opacity:
+                    selectedLine === "all" || selectedLine === "BL" ? 1 : 0.15,
+                  transition: "opacity 0.3s ease-in-out",
+                }}
+              ></path>
+              <path
+                d="m 1174.7109 943.2889 h -360.00008 c -34.28884 0 -59.99992 -40.71114 -59.99992 -75 v -445 c 0 -50 0 -50 55 -50 h 370 c 45 0 45 0 45 45 v 230"
+                stroke="#aa753f"
+                style={{
+                  opacity:
+                    selectedLine === "all" || selectedLine === "BR" ? 1 : 0.15,
+                  transition: "opacity 0.3s ease-in-out",
+                }}
+              ></path>
+              <g
+                stroke="#fca311"
+                style={{
+                  opacity:
+                    selectedLine === "all" || selectedLine === "O" ? 1 : 0.15,
+                  transition: "opacity 0.3s ease-in-out",
+                }}
+              >
+                <path d="m 409.7109 983.28889 l 235 -234.99999 v -270 c 0 -20 -10 -30 -30 -30 h -180 l -365 365"></path>
+                <path d="M 434.73522,447.69034 209.7109,223.2889"></path>
+              </g>
             </g>
-            <path
-              d="m 1174.7109 943.2889 h -360.00008 c -34.28884 0 -59.99992 -40.71114 -59.99992 -75 v -445 c 0 -50 0 -50 55 -50 h 370 c 45 0 45 0 45 45 v 230"
-              stroke="#aa753f"
-              style={{
-                opacity:
-                  selectedLine === "all" || selectedLine === "BR" ? 1 : 0.15,
-                transition: "opacity 0.3s ease-in-out",
-              }}
-            />
-            <path
-              d="m 449.7109 103.2889 v -49.999998"
-              stroke="#f98e99"
-              style={{
-                opacity: selectedLine === "all" ? 1 : 0.15,
-                transition: "opacity 0.3s ease-in-out",
-              }}
-            />
-          </g>
 
-          {STATIONS.map((station) => {
-            const stationName = station.name.replace("站", "");
-            const hasAnyData = TOD_DATA[stationName] !== undefined;
-            if (!hasAnyData) return null;
+            {STATIONS.map((station) => {
+              const stationName = station.name.replace("站", "");
+              const hasAnyData = TOD_DATA[stationName] !== undefined;
 
-            const displayValue =
-              displayMode === "tod"
-                ? getTodValue(station.id)
-                : getPriceValue(station.id);
-            const isDimmed = !checkStationInLine(station, selectedLine);
-            const rank = getStationRank(station.id);
+              const displayValue =
+                displayMode === "tod"
+                  ? getTodValue(station.id)
+                  : getPriceValue(station.id);
+              const isDimmed = !checkStationInLine(station, selectedLine);
+              const rank = getStationRank(station.id);
 
-            return (
-              <StationNode
-                key={station.id}
-                station={station}
-                displayValue={displayValue}
-                displayMode={displayMode}
-                isSelected={selectedStationId === station.id}
-                isDimmed={isDimmed}
-                onClick={handleStationClick}
-                selectedLine={selectedLine}
-                rank={rank}
-              />
-            );
-          })}
-        </svg>
+              return (
+                <StationNode
+                  key={station.id}
+                  station={station}
+                  displayValue={displayValue}
+                  displayMode={displayMode}
+                  isSelected={selectedStationId === station.id}
+                  isDimmed={isDimmed}
+                  onClick={handleStationClick}
+                  selectedLine={selectedLine}
+                  rank={rank}
+                  hasData={hasAnyData}
+                />
+              );
+            })}
+          </svg>
+        </div>
       </div>
 
       {/* 桌面版：右側資訊面板 */}
