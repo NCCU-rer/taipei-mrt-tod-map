@@ -888,7 +888,7 @@ export default function MrtMap() {
           </div>
         </div>
 
-        {/* 手機版圖例 - 可收合且可點擊 */}
+        {/* 手機版圖例 - 可收合但點擊路線不關閉 */}
         <div className="md:hidden absolute top-4 right-4 z-10">
           {!isLegendOpen && (
             <button
@@ -917,10 +917,7 @@ export default function MrtMap() {
                 {LINES.filter((line) => line.id !== "Y").map((line) => (
                   <button
                     key={line.id}
-                    onClick={() => {
-                      handleLegendClick(line.id);
-                      setIsLegendOpen(false);
-                    }}
+                    onClick={() => handleLegendClick(line.id)}
                     className={`flex items-center gap-2 transition-all duration-300 px-2 py-1.5 rounded ${
                       selectedLine === line.id
                         ? "bg-blue-50 ring-2 ring-blue-300"
