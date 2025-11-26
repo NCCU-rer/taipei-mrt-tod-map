@@ -354,8 +354,6 @@ export default function MrtMap() {
 
   // 處理圖例點擊 - 切換式
   const handleLegendClick = (lineId: string) => {
-    // 如果點擊的是當前選中的路線，則回到所有路線
-    // 否則切換到點擊的路線
     setSelectedLine(selectedLine === lineId ? "all" : lineId);
   };
 
@@ -570,12 +568,11 @@ export default function MrtMap() {
         </div>
       </div>
 
-      {/* 查看排名按鈕 */}
+      {/* 查看排名按鈕 - 簡化設計 */}
       <button
         onClick={() => setShowRankingModal(true)}
-        className="w-full px-4 py-3 bg-gradient-to-r from-[#c8102e] to-[#a00d25] text-white rounded-lg font-medium hover:from-[#a00d25] hover:to-[#8a0b20] transition-all shadow-md flex items-center justify-center gap-2"
+        className="w-full px-4 py-3 bg-[#003d82] text-white rounded-lg text-sm font-medium hover:bg-[#002d5f] transition-colors"
       >
-        <Award className="w-5 h-5" />
         查看排名
       </button>
     </div>
@@ -614,55 +611,72 @@ export default function MrtMap() {
 
           {currentDetails ? (
             <>
-              <div className="grid grid-cols-2 gap-2 mb-4">
-                <div className="col-span-2 bg-blue-50 rounded-lg p-3 border border-blue-100">
-                  <div className="flex items-center gap-1.5 text-[#003d82] mb-1">
-                    <TrendingUp className="w-3.5 h-3.5" />
-                    <span className="text-xs font-bold">TOD 指數</span>
-                  </div>
-                  <div className="text-2xl font-bold text-[#003d82] font-mono">
-                    {currentDetails.score?.toFixed(1) ?? "N/A"}
+              {/* 簡化的資訊卡片 - 柔和配色 */}
+              <div className="space-y-3 mb-4">
+                {/* TOD 指數 */}
+                <div className="bg-white border border-gray-200 rounded-lg p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm text-gray-600">TOD 指數</span>
+                    </div>
+                    <div className="text-2xl font-bold text-[#003d82]">
+                      {currentDetails.score?.toFixed(1) ?? "N/A"}
+                    </div>
                   </div>
                 </div>
+
+                {/* 自訂指標排名 */}
                 {currentStationInfo.rank && (
-                  <div className="col-span-2 bg-red-50 rounded-lg p-3 border border-red-100">
-                    <div className="flex items-center gap-1.5 text-[#c8102e] mb-1">
-                      <Award className="w-3.5 h-3.5" />
-                      <span className="text-xs font-bold">自訂指標排名</span>
-                    </div>
-                    <div className="text-2xl font-bold text-[#c8102e] font-mono">
-                      #{currentStationInfo.rank}
-                      <span className="text-sm font-normal text-red-400 ml-2">
-                        分數:{" "}
-                        {(currentStationInfo.customScore * 100).toFixed(1)}
-                      </span>
+                  <div className="bg-white border border-gray-200 rounded-lg p-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Award className="w-4 h-4 text-gray-500" />
+                        <span className="text-sm text-gray-600">
+                          自訂指標排名
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-[#c8102e]">
+                          #{currentStationInfo.rank}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          分數:{" "}
+                          {(currentStationInfo.customScore * 100).toFixed(1)}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
-                <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                  <div className="flex items-center gap-1.5 text-gray-500 mb-1">
-                    <Activity className="w-3.5 h-3.5" />
-                    <span className="text-xs font-bold">交易量</span>
+
+                {/* 交易量和平均單價 */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-white border border-gray-200 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Activity className="w-4 h-4 text-gray-500" />
+                      <span className="text-xs text-gray-600">交易量</span>
+                    </div>
+                    <div className="text-xl font-bold text-gray-800">
+                      {currentDetails.count ?? "N/A"}
+                      <span className="text-sm font-normal text-gray-500 ml-1">
+                        件
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-lg font-bold text-gray-700 font-mono">
-                    {currentDetails.count ?? "N/A"}{" "}
-                    <span className="text-xs font-normal text-gray-400">
-                      件
-                    </span>
-                  </div>
-                </div>
-                <div className="bg-green-50 rounded-lg p-3 border border-gray-100">
-                  <div className="flex items-center gap-1.5 text-green-600 mb-1">
-                    <DollarSign className="w-3.5 h-3.5" />
-                    <span className="text-xs font-bold">平均單價</span>
-                  </div>
-                  <div className="text-lg font-bold text-green-700 font-mono">
-                    {currentDetails.price
-                      ? formatPrice(currentDetails.price / 10000)
-                      : "N/A"}{" "}
-                    <span className="text-xs font-normal text-green-400">
-                      萬/坪
-                    </span>
+
+                  <div className="bg-white border border-gray-200 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <DollarSign className="w-4 h-4 text-gray-500" />
+                      <span className="text-xs text-gray-600">平均單價</span>
+                    </div>
+                    <div className="text-xl font-bold text-gray-800">
+                      {currentDetails.price
+                        ? formatPrice(currentDetails.price / 10000)
+                        : "N/A"}
+                      <span className="text-sm font-normal text-gray-500 ml-1">
+                        萬/坪
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -708,7 +722,7 @@ export default function MrtMap() {
                     </ResponsiveContainer>
                   </div>
 
-                  {/* 指標列表 */}
+                  {/* 指標列表 - 移除漸層 */}
                   <div className="space-y-2">
                     {currentDetails.radar
                       .filter((item: any) => !isNaN(item.value))
@@ -732,7 +746,7 @@ export default function MrtMap() {
                               </div>
                               <div className="w-full bg-gray-200 rounded-full h-1.5">
                                 <div
-                                  className="bg-gradient-to-r from-[#003d82] to-[#0056b3] h-1.5 rounded-full transition-all duration-500"
+                                  className="bg-[#003d82] h-1.5 rounded-full transition-all duration-500"
                                   style={{ width: `${percentage}%` }}
                                 ></div>
                               </div>
@@ -767,10 +781,10 @@ export default function MrtMap() {
   );
 
   return (
-    <div className="relative w-full h-screen flex flex-col md:flex-row bg-gradient-to-br from-gray-50 to-blue-50">
+    <div className="relative w-full h-screen flex flex-col md:flex-row bg-gray-50">
       {/* 桌面版：左側控制面板 */}
       <div className="hidden md:flex w-80 bg-white border-r border-gray-200 shadow-xl flex-col overflow-hidden">
-        <div className="p-5 border-b border-gray-200 bg-gradient-to-r from-[#003d82] to-[#0056b3]">
+        <div className="p-5 border-b border-gray-200 bg-[#003d82]">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
               <Train className="w-6 h-6 text-[#003d82]" />
@@ -791,7 +805,7 @@ export default function MrtMap() {
       </div>
 
       {/* 手機版：頂部標題欄 */}
-      <div className="md:hidden bg-gradient-to-r from-[#003d82] to-[#0056b3] p-4 flex items-center justify-between">
+      <div className="md:hidden bg-[#003d82] p-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Train className="w-6 h-6 text-white" />
           <h1 className="text-lg font-bold text-white">捷運 TOD 分析</h1>
@@ -816,7 +830,7 @@ export default function MrtMap() {
             onClick={() => setIsMobileMenuOpen(false)}
           />
           <div className="md:hidden fixed top-0 left-0 right-0 bottom-0 bg-white z-50 overflow-y-auto animate-in slide-in-from-top duration-300">
-            <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-[#003d82] to-[#0056b3] flex items-center justify-between">
+            <div className="p-4 border-b border-gray-200 bg-[#003d82] flex items-center justify-between">
               <h2 className="text-lg font-bold text-white">設定</h2>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -1073,7 +1087,7 @@ export default function MrtMap() {
 
       {/* 桌面版：右側資訊面板 */}
       <div className="hidden md:flex w-96 bg-white border-l border-gray-200 shadow-xl flex-col overflow-hidden">
-        <div className="p-5 border-b border-gray-200 bg-gradient-to-r from-[#003d82] to-[#0056b3]">
+        <div className="p-5 border-b border-gray-200 bg-[#003d82]">
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
             <Info className="w-5 h-5" />
             站點資訊
@@ -1130,7 +1144,7 @@ export default function MrtMap() {
           />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-2 md:p-4 pointer-events-none">
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[95vh] md:max-h-[90vh] overflow-hidden pointer-events-auto animate-in zoom-in-95 duration-200">
-              <div className="p-4 md:p-6 border-b border-gray-200 bg-gradient-to-r from-[#c8102e] to-[#a00d25]">
+              <div className="p-4 md:p-6 border-b border-gray-200 bg-[#003d82]">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 md:gap-3">
                     <Award className="w-5 h-5 md:w-6 md:h-6 text-white" />
@@ -1138,7 +1152,7 @@ export default function MrtMap() {
                       <h2 className="text-lg md:text-xl font-bold text-white">
                         站點排名 TOP 20
                       </h2>
-                      <p className="text-xs text-red-100 mt-1">
+                      <p className="text-xs text-blue-100 mt-1">
                         已選 {selectedIndicators.length} 項 - 點擊長條查看詳情
                       </p>
                     </div>
