@@ -1,4 +1,5 @@
 import { LineInfo } from "../types/mrt";
+import { StationData } from "../types/mrt";
 
 // 路線名稱與顏色對應
 export const LINES: LineInfo[] = [
@@ -18,4 +19,24 @@ export const getLineColor = (stationId: string): string => {
   if (stationId.startsWith("O")) return "#fca311"; // 橘線
   if (stationId.startsWith("BR")) return "#aa753f"; // 棕線
   return "#999"; // 預設
+};
+
+// 🔥 新增：取得站點的所有路線顏色
+export const getLineColors = (station: StationData): string[] => {
+  const colors: string[] = [];
+
+  // 如果站點有 lines 屬性，使用它
+  if (station.lines && station.lines.length > 0) {
+    station.lines.forEach((lineId) => {
+      const line = LINES.find((l) => l.id === lineId);
+      if (line) {
+        colors.push(line.color);
+      }
+    });
+  } else {
+    // 否則使用預設的單一顏色
+    colors.push(getLineColor(station.id));
+  }
+
+  return colors;
 };

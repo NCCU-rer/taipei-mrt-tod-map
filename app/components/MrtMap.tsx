@@ -15,7 +15,7 @@ import { StationData } from "../types/mrt";
 import { STATIONS } from "../data/stations";
 import { TOD_DATA } from "../data/todData";
 import { TOD_DETAILS } from "../data/todDetails";
-import { LINES, getLineColor } from "../data/lines";
+import { LINES, getLineColor, getLineColors } from "../data/lines";
 
 // 導入圖示
 import {
@@ -40,6 +40,7 @@ interface StationNodeProps {
   isDimmed: boolean;
   onClick: (station: StationData) => void;
   isMobile: boolean;
+  selectedLine: string;
 }
 
 const StationNode: React.FC<StationNodeProps> = ({
@@ -49,15 +50,14 @@ const StationNode: React.FC<StationNodeProps> = ({
   isDimmed,
   onClick,
   isMobile,
+  selectedLine,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
-  const lineColor = getLineColor(station.id);
   const hasData = todValue !== "-";
   const radius = hasData ? (isMobile ? 18 : 15) : isMobile ? 15 : 12;
 
   const fill = hasData ? "#ffffff" : "#f0f0f0";
-  const stroke = isSelected ? "#000" : lineColor;
   const strokeWidth = isSelected ? (isMobile ? 4 : 3) : isMobile ? 3 : 2.5;
 
   const textColor = isSelected ? "#000" : "#555";
@@ -65,6 +65,22 @@ const StationNode: React.FC<StationNodeProps> = ({
 
   const displayValue = todValue;
   const valueColor = hasData ? "#333" : "#999";
+
+  // 🔥 取得站點的所有路線顏色
+  const stationColors = getLineColors(station);
+
+  // 🔥 根據選擇的路線決定顯示的顏色
+  const displayColors =
+    selectedLine === "all"
+      ? stationColors
+      : stationColors.filter((c) => {
+          const lineId = LINES.find((l) => l.color === c)?.id;
+          return lineId === selectedLine;
+        });
+
+  // 如果篩選後沒有顏色，使用預設顏色
+  const finalColors =
+    displayColors.length > 0 ? displayColors : [getLineColor(station.id)];
 
   const labelPosition = station.labelPosition || "bottom";
   const getLabelOffset = () => {
@@ -95,6 +111,9 @@ const StationNode: React.FC<StationNodeProps> = ({
       ? "start"
       : "middle";
 
+  // 🔥 生成漸層 ID（每個站點唯一）
+  const gradientId = `gradient-${station.id}`;
+
   return (
     <g
       transform={`translate(${station.x}, ${station.y})`}
@@ -112,11 +131,27 @@ const StationNode: React.FC<StationNodeProps> = ({
         transition: "opacity 0.3s ease-in-out",
       }}
     >
+      {/* 定義漸層 */}
+      <defs>
+        {finalColors.length > 1 ? (
+          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+            {finalColors.map((color, index) => {
+              const offset = (index / (finalColors.length - 1)) * 100;
+              return (
+                <stop key={index} offset={`${offset}%`} stopColor={color} />
+              );
+            })}
+          </linearGradient>
+        ) : null}
+      </defs>
+
       <circle r={isMobile ? 35 : 25} fill="transparent" />
+
+      {/* 🔥 使用漸層或單色 */}
       <circle
         r={radius}
         fill={fill}
-        stroke={stroke}
+        stroke={finalColors.length > 1 ? `url(#${gradientId})` : finalColors[0]}
         strokeWidth={strokeWidth}
         style={{
           filter:
@@ -127,6 +162,7 @@ const StationNode: React.FC<StationNodeProps> = ({
           transform: isHovered ? "scale(1.1)" : "scale(1)",
         }}
       />
+
       <text
         dy=".35em"
         fill={valueColor}
@@ -718,6 +754,7 @@ export default function MrtMap() {
               isDimmed={isDimmed}
               onClick={handleStationClick}
               isMobile={isMobile}
+              selectedLine={selectedLine}
             />
           );
         })}
