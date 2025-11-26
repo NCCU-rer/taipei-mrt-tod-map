@@ -213,11 +213,11 @@ export const STATIONS: StationData[] = [
   { id: "O20", name: "輔大", x: 148, y: 734, labelPosition: "left" },
   { id: "O21", name: "丹鳳", x: 107, y: 775, labelPosition: "left" },
   { id: "O22", name: "迴龍", x: 68, y: 815, labelPosition: "left" },
-  { id: "O50", name: "三重國小", x: 403, y: 410, labelPosition: "left" },
-  { id: "O51", name: "三和國中", x: 358, y: 365, labelPosition: "left" },
-  { id: "O52", name: "徐匯中學", x: 314, y: 320, labelPosition: "left" },
-  { id: "O53", name: "三民高中", x: 268, y: 275, labelPosition: "left" },
-  { id: "O54", name: "蘆洲", x: 224, y: 230, labelPosition: "left" },
+  { id: "O50", name: "三重國小", x: 394, y: 406, labelPosition: "left" },
+  { id: "O51", name: "三和國中", x: 348, y: 362, labelPosition: "left" },
+  { id: "O52", name: "徐匯中學", x: 304, y: 316, labelPosition: "left" },
+  { id: "O53", name: "三民高中", x: 258, y: 272, labelPosition: "left" },
+  { id: "O54", name: "蘆洲", x: 214, y: 226, labelPosition: "left" },
 
   // --- 文湖線 (Brown) ---
   { id: "BR01", name: "動物園", x: 1166, y: 944, labelPosition: "bottom" },

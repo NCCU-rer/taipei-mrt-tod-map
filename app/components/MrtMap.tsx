@@ -110,10 +110,11 @@ const StationNode: React.FC<StationNodeProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
-  const radius = hasData ? 15 : 12;
-  const fill = hasData ? "#ffffff" : "#999999";
+  const radius = 15; // 統一大小
+  const fill = hasData ? "#ffffff" : "#d1d5db"; // 有資料：白色，無資料：灰色
   const strokeWidth = isSelected ? 3 : 2.5;
-  const valueColor = hasData ? "#333" : "#666";
+  const valueColor = hasData ? "#333" : "#6b7280"; // 有資料：深色，無資料：灰色
+  const valueFontSize = hasData ? 10 : 12; // 無資料時 "-" 字體稍大
 
   const stationColors = getLineColors(station);
   const displayColors =
@@ -169,7 +170,7 @@ const StationNode: React.FC<StationNodeProps> = ({
       onMouseLeave={() => setIsHovered(false)}
       style={{
         cursor: hasData ? "pointer" : "default",
-        opacity: isDimmed ? 0.1 : hasData ? 1 : 0.5,
+        opacity: isDimmed ? 0.1 : 1,
         transition: "opacity 0.3s ease-in-out",
       }}
     >
@@ -191,13 +192,7 @@ const StationNode: React.FC<StationNodeProps> = ({
       <circle
         r={radius}
         fill={fill}
-        stroke={
-          hasData
-            ? finalColors.length > 1
-              ? `url(#${gradientId})`
-              : finalColors[0]
-            : "#777"
-        }
+        stroke={finalColors.length > 1 ? `url(#${gradientId})` : finalColors[0]}
         strokeWidth={strokeWidth}
         style={{
           filter:
@@ -212,7 +207,7 @@ const StationNode: React.FC<StationNodeProps> = ({
       <text
         dy=".35em"
         fill={valueColor}
-        fontSize={hasData ? 10 : 14}
+        fontSize={valueFontSize}
         fontWeight="900"
         textAnchor="middle"
         style={{ pointerEvents: "none", userSelect: "none" }}
@@ -251,7 +246,7 @@ const StationNode: React.FC<StationNodeProps> = ({
         dy={
           labelPosition === "left" || labelPosition === "right" ? ".35em" : "0"
         }
-        fill={hasData ? (isSelected ? "#000" : "#555") : "#888"}
+        fill={hasData ? (isSelected ? "#000" : "#555") : "#999"}
         fontSize={14}
         fontFamily="Noto Sans CJK TC Regular"
         fontWeight={isSelected ? "bold" : "normal"}
