@@ -109,10 +109,8 @@ const StationNode: React.FC<StationNodeProps> = ({
   const [isHovered, setIsHovered] = useState(false);
 
   const radius = hasData ? 15 : 12;
-  // 加深灰色站點的填充色
   const fill = hasData ? "#ffffff" : "#999999";
   const strokeWidth = isSelected ? 3 : 2.5;
-  // 加深灰色站點的文字顏色
   const valueColor = hasData ? "#333" : "#666";
 
   const stationColors = getLineColors(station);
@@ -354,6 +352,13 @@ export default function MrtMap() {
     setIsMobileInfoOpen(true);
   };
 
+  // 處理圖例點擊 - 切換式
+  const handleLegendClick = (lineId: string) => {
+    // 如果點擊的是當前選中的路線，則回到所有路線
+    // 否則切換到點擊的路線
+    setSelectedLine(selectedLine === lineId ? "all" : lineId);
+  };
+
   const currentDetails = useMemo(() => {
     if (!selectedStationId) return null;
     const station = STATIONS.find((s) => s.id === selectedStationId);
@@ -506,7 +511,7 @@ export default function MrtMap() {
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003d82] focus:border-transparent"
         >
           <option value="all">所有路線</option>
-          {LINES.map((line) => (
+          {LINES.filter((line) => line.id !== "Y").map((line) => (
             <option key={line.id} value={line.id}>
               {line.name}
             </option>
@@ -829,16 +834,21 @@ export default function MrtMap() {
 
       {/* 中間地圖區域 */}
       <div className="flex-1 relative bg-white overflow-auto">
-        {/* 桌面版圖例 - 完整顯示 */}
+        {/* 桌面版圖例 - 切換式點擊 */}
         <div className="hidden md:block absolute top-4 right-4 bg-white/95 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-gray-200 z-10">
           <h4 className="text-xs font-bold text-gray-500 uppercase mb-3 tracking-wider border-b border-gray-200 pb-2">
-            路線圖例
+            路線圖例（點擊切換）
           </h4>
           <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-            {LINES.map((line) => (
-              <div
+            {LINES.filter((line) => line.id !== "Y").map((line) => (
+              <button
                 key={line.id}
-                className={`flex items-center gap-2 transition-opacity duration-300 ${
+                onClick={() => handleLegendClick(line.id)}
+                className={`flex items-center gap-2 transition-all duration-300 px-2 py-1.5 rounded ${
+                  selectedLine === line.id
+                    ? "bg-blue-50 ring-2 ring-blue-400 shadow-sm"
+                    : "hover:bg-gray-100"
+                } ${
                   selectedLine !== "all" && selectedLine !== line.id
                     ? "opacity-30"
                     : "opacity-100"
@@ -848,10 +858,16 @@ export default function MrtMap() {
                   className="w-3 h-3 rounded-full shadow-sm flex-shrink-0"
                   style={{ backgroundColor: line.color }}
                 ></span>
-                <span className="text-xs text-gray-700 font-medium">
+                <span
+                  className={`text-xs font-medium ${
+                    selectedLine === line.id
+                      ? "text-blue-700 font-bold"
+                      : "text-gray-700"
+                  }`}
+                >
                   {line.name}
                 </span>
-              </div>
+              </button>
             ))}
           </div>
           <div className="mt-3 pt-3 border-t border-gray-200">
@@ -872,7 +888,7 @@ export default function MrtMap() {
           </div>
         </div>
 
-        {/* 手機版圖例 - 可收合 */}
+        {/* 手機版圖例 - 可收合且可點擊 */}
         <div className="md:hidden absolute top-4 right-4 z-10">
           {!isLegendOpen && (
             <button
@@ -898,10 +914,18 @@ export default function MrtMap() {
               </div>
               <div className="border-t border-gray-200 pt-2 mb-2"></div>
               <div className="grid grid-cols-1 gap-y-2">
-                {LINES.map((line) => (
-                  <div
+                {LINES.filter((line) => line.id !== "Y").map((line) => (
+                  <button
                     key={line.id}
-                    className={`flex items-center gap-2 transition-opacity duration-300 ${
+                    onClick={() => {
+                      handleLegendClick(line.id);
+                      setIsLegendOpen(false);
+                    }}
+                    className={`flex items-center gap-2 transition-all duration-300 px-2 py-1.5 rounded ${
+                      selectedLine === line.id
+                        ? "bg-blue-50 ring-2 ring-blue-300"
+                        : "hover:bg-gray-100"
+                    } ${
                       selectedLine !== "all" && selectedLine !== line.id
                         ? "opacity-30"
                         : "opacity-100"
@@ -911,10 +935,16 @@ export default function MrtMap() {
                       className="w-3 h-3 rounded-full shadow-sm flex-shrink-0"
                       style={{ backgroundColor: line.color }}
                     ></span>
-                    <span className="text-xs text-gray-700 font-medium truncate">
+                    <span
+                      className={`text-xs font-medium truncate ${
+                        selectedLine === line.id
+                          ? "text-blue-700 font-bold"
+                          : "text-gray-700"
+                      }`}
+                    >
                       {line.name}
                     </span>
-                  </div>
+                  </button>
                 ))}
               </div>
               <div className="mt-2 pt-2 border-t border-gray-200">
