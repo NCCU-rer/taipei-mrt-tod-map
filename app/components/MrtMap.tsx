@@ -52,6 +52,8 @@ import {
   Menu,
   ChevronUp,
   List,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 // 8項指標定義（加上圖示）
@@ -282,6 +284,7 @@ export default function MrtMap() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileInfoOpen, setIsMobileInfoOpen] = useState(false);
   const [isLegendOpen, setIsLegendOpen] = useState(false);
+  const [rankingPage, setRankingPage] = useState(0); // 排名頁碼
 
   const getTodValue = (stationId: string) => {
     const station = STATIONS.find((s) => s.id === stationId);
@@ -409,16 +412,34 @@ export default function MrtMap() {
     }
   };
 
-  // 排名圖表數據（前20名）
-  const rankingChartData = rankedStations
-    .slice(0, 20)
-    .map((item) => ({
-      name: item.station.name,
-      score: Number((item.score * 100).toFixed(1)),
-      rank: item.rank,
-      stationId: item.station.id,
-    }))
+  // 排名圖表數據 - 分頁顯示，加入路線顏色
+  const ITEMS_PER_PAGE = 20;
+  const allRankingData = rankedStations
+    .map((item) => {
+      const colors = getLineColors(item.station);
+      return {
+        name: item.station.name,
+        score: Number((item.score * 100).toFixed(1)),
+        rank: item.rank,
+        stationId: item.station.id,
+        // 使用第一個路線顏色作為長條圖顏色
+        color: colors[0] || "#999",
+        // 加入房價資訊
+        price: (() => {
+          const stationName = item.station.name.replace("站", "");
+          const details =
+            TOD_DETAILS[stationName]?.[selectedYear]?.[selectedBuffer];
+          return details?.price ? (details.price / 10000).toFixed(0) : null;
+        })(),
+      };
+    })
     .filter((item) => !isNaN(item.score));
+
+  const totalPages = Math.ceil(allRankingData.length / ITEMS_PER_PAGE);
+  const rankingChartData = allRankingData.slice(
+    rankingPage * ITEMS_PER_PAGE,
+    (rankingPage + 1) * ITEMS_PER_PAGE
+  );
 
   // 處理圖表點擊
   const handleBarClick = (data: any) => {
@@ -427,6 +448,46 @@ export default function MrtMap() {
       setShowRankingModal(false);
       setIsMobileInfoOpen(true);
     }
+  };
+
+  // 翻頁功能
+  const handlePrevPage = () => {
+    setRankingPage((prev) => Math.max(0, prev - 1));
+  };
+
+  const handleNextPage = () => {
+    setRankingPage((prev) => Math.min(totalPages - 1, prev + 1));
+  };
+
+  // 自訂 Tooltip
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-lg">
+          <p className="font-bold text-gray-800 mb-2">{data.name}</p>
+          <div className="space-y-1 text-sm">
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-gray-600">排名：</span>
+              <span className="font-bold text-[#c8102e]">#{data.rank}</span>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-gray-600">綜合分數：</span>
+              <span className="font-bold text-[#003d82]">{data.score} 分</span>
+            </div>
+            {data.price && (
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-gray-600">平均單價：</span>
+                <span className="font-bold text-green-600">
+                  {data.price} 萬/坪
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+    return null;
   };
 
   // 控制面板內容組件
@@ -570,7 +631,10 @@ export default function MrtMap() {
 
       {/* 查看排名按鈕 - 簡化設計 */}
       <button
-        onClick={() => setShowRankingModal(true)}
+        onClick={() => {
+          setShowRankingModal(true);
+          setRankingPage(0); // 重置到第一頁
+        }}
         className="w-full px-4 py-3 bg-[#003d82] text-white rounded-lg text-sm font-medium hover:bg-[#002d5f] transition-colors"
       >
         查看排名
@@ -1135,7 +1199,7 @@ export default function MrtMap() {
         </>
       )}
 
-      {/* 排名視窗 Modal */}
+      {/* 排名視窗 Modal - 使用路線顏色 */}
       {showRankingModal && (
         <>
           <div
@@ -1150,10 +1214,11 @@ export default function MrtMap() {
                     <Award className="w-5 h-5 md:w-6 md:h-6 text-white" />
                     <div>
                       <h2 className="text-lg md:text-xl font-bold text-white">
-                        站點排名 TOP 20
+                        站點排名 (第 {rankingPage + 1} / {totalPages} 頁)
                       </h2>
                       <p className="text-xs text-blue-100 mt-1">
-                        已選 {selectedIndicators.length} 項 - 點擊長條查看詳情
+                        已選 {selectedIndicators.length} 項 - 點擊長條查看詳情 -
+                        Hover 查看分數與房價
                       </p>
                     </div>
                   </div>
@@ -1186,7 +1251,45 @@ export default function MrtMap() {
                   </div>
                 </div>
 
-                {/* 長條圖 */}
+                {/* 翻頁按鈕 */}
+                <div className="flex items-center justify-between mb-4">
+                  <button
+                    onClick={handlePrevPage}
+                    disabled={rankingPage === 0}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      rankingPage === 0
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-[#003d82] text-white hover:bg-[#002d5f]"
+                    }`}
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    上一頁
+                  </button>
+
+                  <span className="text-sm text-gray-600">
+                    顯示 {rankingPage * ITEMS_PER_PAGE + 1} -{" "}
+                    {Math.min(
+                      (rankingPage + 1) * ITEMS_PER_PAGE,
+                      allRankingData.length
+                    )}{" "}
+                    / 共 {allRankingData.length} 站
+                  </span>
+
+                  <button
+                    onClick={handleNextPage}
+                    disabled={rankingPage >= totalPages - 1}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      rankingPage >= totalPages - 1
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-[#003d82] text-white hover:bg-[#002d5f]"
+                    }`}
+                  >
+                    下一頁
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* 長條圖 - 使用路線顏色 */}
                 <div className="w-full h-[400px] md:h-[600px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
@@ -1212,16 +1315,7 @@ export default function MrtMap() {
                         domain={[0, 100]}
                         tick={{ fontSize: 10 }}
                       />
-                      <Tooltip
-                        formatter={(value: any) => [`${value} 分`, "綜合分數"]}
-                        contentStyle={{
-                          backgroundColor: "rgba(255, 255, 255, 0.95)",
-                          border: "1px solid #e5e7eb",
-                          borderRadius: "8px",
-                          fontSize: "12px",
-                        }}
-                        cursor={{ fill: "rgba(0, 61, 130, 0.1)" }}
-                      />
+                      <Tooltip content={<CustomTooltip />} />
                       <Bar
                         dataKey="score"
                         radius={[8, 8, 0, 0]}
@@ -1229,16 +1323,7 @@ export default function MrtMap() {
                         cursor="pointer"
                       >
                         {rankingChartData.map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={
-                              index < 3
-                                ? "#c8102e"
-                                : index < 10
-                                ? "#f97316"
-                                : "#003d82"
-                            }
-                          />
+                          <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Bar>
                     </BarChart>
