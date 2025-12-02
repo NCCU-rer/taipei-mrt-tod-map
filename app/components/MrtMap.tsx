@@ -15,12 +15,12 @@ import InfoPanel from "./InfoPanel";
 import RankingModal from "./RankingModal";
 
 // 導入圖示
-import { ChevronDown, Train, X, Info, Menu, List } from "lucide-react";
+import { ChevronDown, ChevronUp, Train, X, Info, Menu } from "lucide-react";
 
 // 顯示模式
 type DisplayMode = "tod" | "price";
 
-// --- 單個站點元件 (改良版) ---
+// --- 單個站點元件 ---
 interface StationNodeProps {
   station: StationData;
   displayValue: string | number;
@@ -46,16 +46,11 @@ const StationNode: React.FC<StationNodeProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
-  // 🔥 改良 1: 增加圓圈大小
-  const radius = 18; // 15 → 18
+  const radius = 18;
   const fill = hasData ? "#ffffff" : "#d1d5db";
   const strokeWidth = isSelected ? 3 : 2.5;
-
-  // 🔥 改良 2: 更深的文字顏色
   const valueColor = hasData ? "#1a1a1a" : "#6b7280";
-
-  // 🔥 改良 3: 增加字體大小
-  const valueFontSize = hasData ? 11 : 13; // 10/12 → 11/13
+  const valueFontSize = hasData ? 11 : 13;
 
   const stationColors = getLineColors(station);
   const displayColors =
@@ -72,7 +67,7 @@ const StationNode: React.FC<StationNodeProps> = ({
   const labelPosition = station.labelPosition || "bottom";
   const getLabelOffset = () => {
     if (station.labelOffset) return station.labelOffset;
-    const verticalOffset = 30; // 28 → 30 (配合圓圈變大)
+    const verticalOffset = 30;
     const horizontalOffset = 30;
     switch (labelPosition) {
       case "top":
@@ -128,28 +123,23 @@ const StationNode: React.FC<StationNodeProps> = ({
         ) : null}
       </defs>
 
-      {/* 🔥 改良 4: 增加點擊區域 */}
       <circle r={28} fill="transparent" />
 
-      {/* 主要圓圈 */}
       <circle
         r={radius}
         fill={fill}
         stroke={finalColors.length > 1 ? `url(#${gradientId})` : finalColors[0]}
         strokeWidth={strokeWidth}
         style={{
-          // 🔥 改良 5: 增強陰影效果
           filter:
             isSelected || (isHovered && hasData)
               ? "drop-shadow(0px 3px 6px rgba(0,0,0,0.4))"
               : "drop-shadow(0px 1px 2px rgba(0,0,0,0.2))",
           transition: "all 0.2s ease-out",
-          // 🔥 改良 6: hover 時放大更多
           transform: isHovered && hasData ? "scale(1.15)" : "scale(1)",
         }}
       />
 
-      {/* 🔥 改良 7: 數字加上白色光暈背景 */}
       <text
         dy=".35em"
         fill="#ffffff"
@@ -167,7 +157,6 @@ const StationNode: React.FC<StationNodeProps> = ({
         {displayValue}
       </text>
 
-      {/* 🔥 主要數字文字 */}
       <text
         dy=".35em"
         fill={valueColor}
@@ -177,14 +166,12 @@ const StationNode: React.FC<StationNodeProps> = ({
         style={{
           pointerEvents: "none",
           userSelect: "none",
-          // 🔥 改良 8: 增加文字陰影
           filter: "drop-shadow(0px 1px 1px rgba(255,255,255,0.8))",
         }}
       >
         {displayValue}
       </text>
 
-      {/* 排名徽章 */}
       {rank && rank <= 10 && hasData && (
         <g>
           <circle
@@ -210,7 +197,6 @@ const StationNode: React.FC<StationNodeProps> = ({
         </g>
       )}
 
-      {/* 站名標籤 */}
       <text
         x={labelOffset.x}
         y={labelOffset.y}
@@ -249,7 +235,7 @@ export default function MrtMap() {
   const [showRankingModal, setShowRankingModal] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileInfoOpen, setIsMobileInfoOpen] = useState(false);
-  const [isLegendOpen, setIsLegendOpen] = useState(false);
+  const [isLegendOpen, setIsLegendOpen] = useState(true);
   const [rankingPage, setRankingPage] = useState(0);
 
   const getTodValue = (stationId: string) => {
@@ -351,7 +337,6 @@ export default function MrtMap() {
     return false;
   };
 
-  // 排名資料準備
   const ITEMS_PER_PAGE = 20;
   const allRankingData = useMemo(() => {
     return rankedStations
@@ -392,7 +377,6 @@ export default function MrtMap() {
     setRankingPage((prev) => Math.min(totalPages - 1, prev + 1));
   };
 
-  // 取得選定指標的標籤
   const selectedIndicatorLabels = selectedIndicators
     .map((id) => {
       const indicator = INDICATORS.find((i) => i.id === id);
@@ -497,75 +481,96 @@ export default function MrtMap() {
         </>
       )}
 
-      {/* 中間地圖區域 */}
+      {/* 🔥 中間地圖區域 - 圖例在這裡面 */}
       <div className="flex-1 relative bg-white overflow-auto">
-        {/* 桌面版圖例 */}
-        <div className="hidden md:block absolute top-4 right-4 bg-white/95 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-gray-200 z-10">
-          <h4 className="text-xs font-bold text-gray-500 uppercase mb-3 tracking-wider border-b border-gray-200 pb-2">
-            路線圖例（點擊切換）
-          </h4>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-            {LINES.filter((line) => line.id !== "Y").map((line) => (
-              <button
-                key={line.id}
-                onClick={() => handleLegendClick(line.id)}
-                className={`flex items-center gap-2 transition-all duration-300 px-2 py-1.5 rounded ${
-                  selectedLine === line.id
-                    ? "bg-blue-50 ring-2 ring-blue-400 shadow-sm"
-                    : "hover:bg-gray-100"
-                } ${
-                  selectedLine !== "all" && selectedLine !== line.id
-                    ? "opacity-30"
-                    : "opacity-100"
-                }`}
-              >
-                <span
-                  className="w-3 h-3 rounded-full shadow-sm flex-shrink-0"
-                  style={{ backgroundColor: line.color }}
-                ></span>
-                <span
-                  className={`text-xs font-medium ${
-                    selectedLine === line.id
-                      ? "text-blue-700 font-bold"
-                      : "text-gray-700"
-                  }`}
-                >
-                  {line.name}
-                </span>
-              </button>
-            ))}
-          </div>
-          <div className="mt-3 pt-3 border-t border-gray-200">
-            <div className="flex items-center gap-2 text-xs text-gray-600">
-              <div
-                className={`w-4 h-4 rounded-full flex items-center justify-center font-bold text-[10px] flex-shrink-0 ${
-                  displayMode === "tod"
-                    ? "bg-blue-100 text-[#003d82]"
-                    : "bg-red-100 text-[#c8102e]"
-                }`}
-              >
-                {displayMode === "tod" ? "T" : "$"}
-              </div>
-              <span>
-                圓圈顯示：{displayMode === "tod" ? "TOD 指數" : "房價 (萬/坪)"}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* 手機版圖例 */}
-        <div className="md:hidden absolute top-4 right-4 z-10">
-          {!isLegendOpen && (
+        {/* 🔥 桌面版圖例 - 使用 absolute 定位在地圖區域內 */}
+        <div className="hidden md:block absolute top-4 right-4 z-10">
+          {!isLegendOpen ? (
             <button
               onClick={() => setIsLegendOpen(true)}
-              className="bg-white/95 backdrop-blur-sm p-3 rounded-full shadow-lg border border-gray-200 hover:shadow-xl transition-all"
+              className="bg-white/95 backdrop-blur-sm p-3 rounded-full shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 hover:scale-110"
             >
-              <List className="w-5 h-5 text-[#003d82]" />
+              <ChevronUp className="w-5 h-5 text-[#003d82]" />
             </button>
+          ) : (
+            <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 ease-out">
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    路線圖例（點擊切換）
+                  </h4>
+                  <button
+                    onClick={() => setIsLegendOpen(false)}
+                    className="p-1 hover:bg-gray-100 rounded transition-colors"
+                  >
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                  </button>
+                </div>
+                <div className="border-t border-gray-200 pt-3 mb-3"></div>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                  {LINES.filter((line) => line.id !== "Y").map((line) => (
+                    <button
+                      key={line.id}
+                      onClick={() => handleLegendClick(line.id)}
+                      className={`flex items-center gap-2 transition-all duration-300 px-2 py-1.5 rounded ${
+                        selectedLine === line.id
+                          ? "bg-blue-50 ring-2 ring-blue-400 shadow-sm"
+                          : "hover:bg-gray-100"
+                      } ${
+                        selectedLine !== "all" && selectedLine !== line.id
+                          ? "opacity-30"
+                          : "opacity-100"
+                      }`}
+                    >
+                      <span
+                        className="w-3 h-3 rounded-full shadow-sm flex-shrink-0"
+                        style={{ backgroundColor: line.color }}
+                      ></span>
+                      <span
+                        className={`text-xs font-medium ${
+                          selectedLine === line.id
+                            ? "text-blue-700 font-bold"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        {line.name}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                    <div
+                      className={`w-4 h-4 rounded-full flex items-center justify-center font-bold text-[10px] flex-shrink-0 ${
+                        displayMode === "tod"
+                          ? "bg-blue-100 text-[#003d82]"
+                          : "bg-red-100 text-[#c8102e]"
+                      }`}
+                    >
+                      {displayMode === "tod" ? "T" : "$"}
+                    </div>
+                    <span>
+                      圓圈顯示：
+                      {displayMode === "tod" ? "TOD 指數" : "房價 (萬/坪)"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
+        </div>
 
-          {isLegendOpen && (
-            <div className="bg-white/95 backdrop-blur-sm p-3 rounded-xl shadow-lg border border-gray-200 max-w-[200px] animate-in slide-in-from-right duration-200">
+        {/* 🔥 手機版圖例 - 使用 absolute 定位在地圖區域內 */}
+        <div className="md:hidden absolute top-4 right-4 z-10">
+          {!isLegendOpen ? (
+            <button
+              onClick={() => setIsLegendOpen(true)}
+              className="bg-white/95 backdrop-blur-sm p-3 rounded-full shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300"
+            >
+              <ChevronUp className="w-5 h-5 text-[#003d82]" />
+            </button>
+          ) : (
+            <div className="bg-white/95 backdrop-blur-sm p-3 rounded-xl shadow-lg border border-gray-200 max-w-[200px] transition-all duration-300 ease-out">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                   路線圖例
@@ -574,7 +579,7 @@ export default function MrtMap() {
                   onClick={() => setIsLegendOpen(false)}
                   className="p-1 hover:bg-gray-100 rounded transition-colors"
                 >
-                  <X className="w-4 h-4 text-gray-400" />
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
                 </button>
               </div>
               <div className="border-t border-gray-200 pt-2 mb-2"></div>
