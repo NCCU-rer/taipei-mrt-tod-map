@@ -1,21 +1,6 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import {
-  Radar,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Cell,
-} from "recharts";
 
 // 導入類型與資料
 import { StationData } from "../types/mrt";
@@ -24,67 +9,18 @@ import { TOD_DATA } from "../data/todData";
 import { TOD_DETAILS } from "../data/todDetails";
 import { LINES, getLineColor, getLineColors } from "../data/lines";
 
+// 導入組件
+import ControlPanel, { INDICATORS } from "./ControlPanel";
+import InfoPanel from "./InfoPanel";
+import RankingModal from "./RankingModal";
+
 // 導入圖示
-import {
-  Calendar,
-  ChevronDown,
-  MapPin,
-  Train,
-  Home,
-  DollarSign,
-  Activity,
-  X,
-  ExternalLink,
-  TrendingUp,
-  BarChart3,
-  CheckSquare,
-  Square,
-  Award,
-  Info,
-  Footprints,
-  Bike,
-  Network,
-  Bus,
-  ShoppingBag,
-  Building2,
-  MapPinned,
-  CarFront,
-  Menu,
-  ChevronUp,
-  List,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
-
-// 8項指標定義（加上圖示）
-const INDICATORS = [
-  { id: "walk", label: "步行友善", key: "步行友善度", icon: Footprints },
-  { id: "bike", label: "自行車便利", key: "自行車便利度", icon: Bike },
-  { id: "street", label: "街道連通", key: "街道連通度", icon: Network },
-  { id: "transit", label: "大眾運輸", key: "大眾運輸可達度", icon: Bus },
-  { id: "life", label: "生活機能", key: "生活機能多樣性", icon: ShoppingBag },
-  { id: "density", label: "都市密度", key: "都市密度強度", icon: Building2 },
-  { id: "integration", label: "區域整合", key: "區域整合度", icon: MapPinned },
-  { id: "lowcar", label: "低汽車依賴", key: "低汽車依賴度", icon: CarFront },
-];
-
-// 雷達圖標籤對應圖示
-const getRadarIcon = (subject: string) => {
-  if (subject.includes("步行")) return Footprints;
-  if (subject.includes("自行車")) return Bike;
-  if (subject.includes("街道")) return Network;
-  if (subject.includes("運輸")) return Bus;
-  if (subject.includes("生活")) return ShoppingBag;
-  if (subject.includes("密度")) return Building2;
-  if (subject.includes("整合")) return MapPinned;
-  if (subject.includes("汽車")) return CarFront;
-  return Activity;
-};
+import { ChevronDown, Train, X, Info, Menu, List } from "lucide-react";
 
 // 顯示模式
 type DisplayMode = "tod" | "price";
 
-// --- 單個站點元件 ---
+// --- 單個站點元件 (改良版) ---
 interface StationNodeProps {
   station: StationData;
   displayValue: string | number;
@@ -110,11 +46,16 @@ const StationNode: React.FC<StationNodeProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
-  const radius = 15; // 統一大小
-  const fill = hasData ? "#ffffff" : "#d1d5db"; // 有資料：白色，無資料：灰色
+  // 🔥 改良 1: 增加圓圈大小
+  const radius = 18; // 15 → 18
+  const fill = hasData ? "#ffffff" : "#d1d5db";
   const strokeWidth = isSelected ? 3 : 2.5;
-  const valueColor = hasData ? "#333" : "#6b7280"; // 有資料：深色，無資料：灰色
-  const valueFontSize = hasData ? 10 : 12; // 無資料時 "-" 字體稍大
+
+  // 🔥 改良 2: 更深的文字顏色
+  const valueColor = hasData ? "#1a1a1a" : "#6b7280";
+
+  // 🔥 改良 3: 增加字體大小
+  const valueFontSize = hasData ? 11 : 13; // 10/12 → 11/13
 
   const stationColors = getLineColors(station);
   const displayColors =
@@ -131,8 +72,8 @@ const StationNode: React.FC<StationNodeProps> = ({
   const labelPosition = station.labelPosition || "bottom";
   const getLabelOffset = () => {
     if (station.labelOffset) return station.labelOffset;
-    const verticalOffset = 28;
-    const horizontalOffset = 28;
+    const verticalOffset = 30; // 28 → 30 (配合圓圈變大)
+    const horizontalOffset = 30;
     switch (labelPosition) {
       case "top":
         return { x: 0, y: -verticalOffset };
@@ -187,40 +128,69 @@ const StationNode: React.FC<StationNodeProps> = ({
         ) : null}
       </defs>
 
-      <circle r={25} fill="transparent" />
+      {/* 🔥 改良 4: 增加點擊區域 */}
+      <circle r={28} fill="transparent" />
 
+      {/* 主要圓圈 */}
       <circle
         r={radius}
         fill={fill}
         stroke={finalColors.length > 1 ? `url(#${gradientId})` : finalColors[0]}
         strokeWidth={strokeWidth}
         style={{
+          // 🔥 改良 5: 增強陰影效果
           filter:
             isSelected || (isHovered && hasData)
-              ? "drop-shadow(0px 2px 4px rgba(0,0,0,0.3))"
-              : "none",
+              ? "drop-shadow(0px 3px 6px rgba(0,0,0,0.4))"
+              : "drop-shadow(0px 1px 2px rgba(0,0,0,0.2))",
           transition: "all 0.2s ease-out",
-          transform: isHovered && hasData ? "scale(1.1)" : "scale(1)",
+          // 🔥 改良 6: hover 時放大更多
+          transform: isHovered && hasData ? "scale(1.15)" : "scale(1)",
         }}
       />
 
+      {/* 🔥 改良 7: 數字加上白色光暈背景 */}
+      <text
+        dy=".35em"
+        fill="#ffffff"
+        fontSize={valueFontSize + 1}
+        fontWeight="900"
+        textAnchor="middle"
+        stroke="#ffffff"
+        strokeWidth="3"
+        style={{
+          pointerEvents: "none",
+          userSelect: "none",
+          opacity: 0.8,
+        }}
+      >
+        {displayValue}
+      </text>
+
+      {/* 🔥 主要數字文字 */}
       <text
         dy=".35em"
         fill={valueColor}
         fontSize={valueFontSize}
         fontWeight="900"
         textAnchor="middle"
-        style={{ pointerEvents: "none", userSelect: "none" }}
+        style={{
+          pointerEvents: "none",
+          userSelect: "none",
+          // 🔥 改良 8: 增加文字陰影
+          filter: "drop-shadow(0px 1px 1px rgba(255,255,255,0.8))",
+        }}
       >
         {displayValue}
       </text>
 
+      {/* 排名徽章 */}
       {rank && rank <= 10 && hasData && (
         <g>
           <circle
             cx={radius - 3}
             cy={-radius + 3}
-            r="8"
+            r="9"
             fill="#c8102e"
             stroke="#fff"
             strokeWidth="1.5"
@@ -230,7 +200,7 @@ const StationNode: React.FC<StationNodeProps> = ({
             y={-radius + 3}
             dy=".35em"
             fill="#fff"
-            fontSize={8}
+            fontSize={9}
             fontWeight="bold"
             textAnchor="middle"
             style={{ pointerEvents: "none", userSelect: "none" }}
@@ -240,6 +210,7 @@ const StationNode: React.FC<StationNodeProps> = ({
         </g>
       )}
 
+      {/* 站名標籤 */}
       <text
         x={labelOffset.x}
         y={labelOffset.y}
@@ -279,7 +250,7 @@ export default function MrtMap() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileInfoOpen, setIsMobileInfoOpen] = useState(false);
   const [isLegendOpen, setIsLegendOpen] = useState(false);
-  const [rankingPage, setRankingPage] = useState(0); // 排名頁碼
+  const [rankingPage, setRankingPage] = useState(0);
 
   const getTodValue = (stationId: string) => {
     const station = STATIONS.find((s) => s.id === stationId);
@@ -299,7 +270,6 @@ export default function MrtMap() {
     return (details.price / 10000).toFixed(0);
   };
 
-  // 計算自訂指標分數
   const getCustomScore = (stationId: string) => {
     const station = STATIONS.find((s) => s.id === stationId);
     if (!station) return 0;
@@ -321,7 +291,6 @@ export default function MrtMap() {
     return sum / selectedValues.length;
   };
 
-  // 排名計算
   const rankedStations = useMemo(() => {
     const stationsWithScores = STATIONS.map((station) => {
       const stationName = station.name.replace("站", "");
@@ -350,7 +319,6 @@ export default function MrtMap() {
     setIsMobileInfoOpen(true);
   };
 
-  // 處理圖例點擊 - 切換式
   const handleLegendClick = (lineId: string) => {
     setSelectedLine(selectedLine === lineId ? "all" : lineId);
   };
@@ -383,60 +351,31 @@ export default function MrtMap() {
     return false;
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("zh-TW", { maximumFractionDigits: 0 }).format(
-      price
-    );
-  };
-
-  const toggleIndicator = (id: string) => {
-    setSelectedIndicators((prev) => {
-      const newSelection = prev.includes(id)
-        ? prev.filter((i) => i !== id)
-        : [...prev, id];
-      return newSelection.length > 0 ? newSelection : prev;
-    });
-  };
-
-  // 全選/取消全選
-  const toggleSelectAll = () => {
-    if (selectedIndicators.length === INDICATORS.length) {
-      setSelectedIndicators([INDICATORS[0].id]);
-    } else {
-      setSelectedIndicators(INDICATORS.map((ind) => ind.id));
-    }
-  };
-
-  // 排名圖表數據 - 分頁顯示，加入路線顏色
+  // 排名資料準備
   const ITEMS_PER_PAGE = 20;
-  const allRankingData = rankedStations
-    .map((item) => {
-      const colors = getLineColors(item.station);
-      return {
-        name: item.station.name,
-        score: Number((item.score * 100).toFixed(1)),
-        rank: item.rank,
-        stationId: item.station.id,
-        // 使用第一個路線顏色作為長條圖顏色
-        color: colors[0] || "#999",
-        // 加入房價資訊
-        price: (() => {
-          const stationName = item.station.name.replace("站", "");
-          const details =
-            TOD_DETAILS[stationName]?.[selectedYear]?.[selectedBuffer];
-          return details?.price ? (details.price / 10000).toFixed(0) : null;
-        })(),
-      };
-    })
-    .filter((item) => !isNaN(item.score));
+  const allRankingData = useMemo(() => {
+    return rankedStations
+      .map((item) => {
+        const colors = getLineColors(item.station);
+        return {
+          name: item.station.name,
+          score: Number((item.score * 100).toFixed(1)),
+          rank: item.rank,
+          stationId: item.station.id,
+          color: colors[0] || "#999",
+          price: (() => {
+            const stationName = item.station.name.replace("站", "");
+            const details =
+              TOD_DETAILS[stationName]?.[selectedYear]?.[selectedBuffer];
+            return details?.price ? (details.price / 10000).toFixed(0) : null;
+          })(),
+        };
+      })
+      .filter((item) => !isNaN(item.score));
+  }, [rankedStations, selectedYear, selectedBuffer]);
 
   const totalPages = Math.ceil(allRankingData.length / ITEMS_PER_PAGE);
-  const rankingChartData = allRankingData.slice(
-    rankingPage * ITEMS_PER_PAGE,
-    (rankingPage + 1) * ITEMS_PER_PAGE
-  );
 
-  // 處理圖表點擊
   const handleBarClick = (data: any) => {
     if (data && data.stationId) {
       setSelectedStationId(data.stationId);
@@ -445,7 +384,6 @@ export default function MrtMap() {
     }
   };
 
-  // 翻頁功能
   const handlePrevPage = () => {
     setRankingPage((prev) => Math.max(0, prev - 1));
   };
@@ -454,390 +392,13 @@ export default function MrtMap() {
     setRankingPage((prev) => Math.min(totalPages - 1, prev + 1));
   };
 
-  // 自訂 Tooltip
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-lg">
-          <p className="font-bold text-gray-800 mb-2">{data.name}</p>
-          <div className="space-y-1 text-sm">
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-gray-600">排名：</span>
-              <span className="font-bold text-[#c8102e]">#{data.rank}</span>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-gray-600">綜合分數：</span>
-              <span className="font-bold text-[#003d82]">{data.score} 分</span>
-            </div>
-            {data.price && (
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-gray-600">平均單價：</span>
-                <span className="font-bold text-green-600">
-                  {data.price} 萬/坪
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  // 控制面板內容組件
-  const ControlPanel = () => (
-    <div className="space-y-5">
-      {/* 顯示模式 */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <BarChart3 className="w-4 h-4 text-[#003d82]" />
-          <h3 className="text-sm font-bold text-gray-700">顯示模式</h3>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={() => setDisplayMode("tod")}
-            className={`px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-              displayMode === "tod"
-                ? "bg-[#003d82] text-white shadow-md"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            TOD 指數
-          </button>
-          <button
-            onClick={() => setDisplayMode("price")}
-            className={`px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-              displayMode === "price"
-                ? "bg-[#c8102e] text-white shadow-md"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            房價 (萬/坪)
-          </button>
-        </div>
-      </div>
-
-      <div className="border-t border-gray-200"></div>
-
-      {/* 資料年度 */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <Calendar className="w-4 h-4 text-[#003d82]" />
-          <h3 className="text-sm font-bold text-gray-700">資料年度</h3>
-        </div>
-        <select
-          value={selectedYear}
-          onChange={(e) => setSelectedYear(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003d82] focus:border-transparent"
-        >
-          <option value="112">112 年度 (2023)</option>
-          <option value="111">111 年度 (2022)</option>
-          <option value="110">110 年度 (2021)</option>
-        </select>
-      </div>
-
-      {/* 環域範圍 */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <MapPin className="w-4 h-4 text-[#003d82]" />
-          <h3 className="text-sm font-bold text-gray-700">環域範圍</h3>
-        </div>
-        <select
-          value={selectedBuffer}
-          onChange={(e) => setSelectedBuffer(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003d82] focus:border-transparent"
-        >
-          <option value="150">150 公尺 (步行 2-3 分鐘)</option>
-          <option value="300">300 公尺 (步行 4-5 分鐘)</option>
-        </select>
-      </div>
-
-      {/* 捷運路線 */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <Train className="w-4 h-4 text-[#003d82]" />
-          <h3 className="text-sm font-bold text-gray-700">捷運路線</h3>
-        </div>
-        <select
-          value={selectedLine}
-          onChange={(e) => setSelectedLine(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003d82] focus:border-transparent"
-        >
-          <option value="all">所有路線</option>
-          {LINES.filter((line) => line.id !== "Y").map((line) => (
-            <option key={line.id} value={line.id}>
-              {line.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="border-t border-gray-200"></div>
-
-      {/* 指標篩選 */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <Activity className="w-4 h-4 text-[#003d82]" />
-            <h3 className="text-sm font-bold text-gray-700">指標篩選</h3>
-            <button
-              onClick={toggleSelectAll}
-              className="text-xs text-[#003d82] hover:text-[#0056b3] font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
-            >
-              {selectedIndicators.length === INDICATORS.length
-                ? "取消全選"
-                : "全選"}
-            </button>
-          </div>
-          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-            {selectedIndicators.length}/{INDICATORS.length}
-          </span>
-        </div>
-
-        {/* 兩排四個的網格佈局 */}
-        <div className="grid grid-cols-2 gap-2 bg-gray-50 rounded-lg p-3">
-          {INDICATORS.map((indicator) => {
-            const IconComponent = indicator.icon;
-            return (
-              <button
-                key={indicator.id}
-                onClick={() => toggleIndicator(indicator.id)}
-                className={`flex items-center gap-2 p-2.5 rounded-md transition-all ${
-                  selectedIndicators.includes(indicator.id)
-                    ? "bg-white shadow-sm border border-[#003d82]/20"
-                    : "bg-gray-50 hover:bg-white border border-transparent"
-                }`}
-              >
-                {selectedIndicators.includes(indicator.id) ? (
-                  <CheckSquare className="w-4 h-4 text-[#003d82] flex-shrink-0" />
-                ) : (
-                  <Square className="w-4 h-4 text-gray-300 flex-shrink-0" />
-                )}
-                <IconComponent className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                <span className="text-xs text-gray-700 font-medium">
-                  {indicator.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 查看排名按鈕 - 簡化設計 */}
-      <button
-        onClick={() => {
-          setShowRankingModal(true);
-          setRankingPage(0); // 重置到第一頁
-        }}
-        className="w-full px-4 py-3 bg-[#003d82] text-white rounded-lg text-sm font-medium hover:bg-[#002d5f] transition-colors"
-      >
-        查看排名
-      </button>
-    </div>
-  );
-
-  // 資訊面板內容組件
-  const InfoPanel = () => (
-    <>
-      {currentStationInfo ? (
-        <div className="animate-in fade-in slide-in-from-right duration-300">
-          <div className="mb-4">
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">
-              {currentStationInfo.name}
-            </h3>
-            <div className="flex gap-2">
-              <a
-                href={`https://www.metro.taipei/`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs text-[#003d82] hover:text-[#0056b3] hover:underline"
-              >
-                <ExternalLink className="w-3 h-3" />
-                捷運站資訊
-              </a>
-              <a
-                href={`https://yungching.housefun.com.tw/`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs text-[#c8102e] hover:text-[#a00d25] hover:underline"
-              >
-                <Home className="w-3 h-3" />
-                查看房價
-              </a>
-            </div>
-          </div>
-
-          {currentDetails ? (
-            <>
-              {/* 簡化的資訊卡片 - 柔和配色 */}
-              <div className="space-y-3 mb-4">
-                {/* TOD 指數 */}
-                <div className="bg-white border border-gray-200 rounded-lg p-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <TrendingUp className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">TOD 指數</span>
-                    </div>
-                    <div className="text-2xl font-bold text-[#003d82]">
-                      {currentDetails.score?.toFixed(1) ?? "N/A"}
-                    </div>
-                  </div>
-                </div>
-
-                {/* 自訂指標排名 */}
-                {currentStationInfo.rank && (
-                  <div className="bg-white border border-gray-200 rounded-lg p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Award className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm text-gray-600">
-                          自訂指標排名
-                        </span>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-[#c8102e]">
-                          #{currentStationInfo.rank}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          分數:{" "}
-                          {(currentStationInfo.customScore * 100).toFixed(1)}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 交易量和平均單價 */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-white border border-gray-200 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Activity className="w-4 h-4 text-gray-500" />
-                      <span className="text-xs text-gray-600">交易量</span>
-                    </div>
-                    <div className="text-xl font-bold text-gray-800">
-                      {currentDetails.count ?? "N/A"}
-                      <span className="text-sm font-normal text-gray-500 ml-1">
-                        件
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="bg-white border border-gray-200 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <DollarSign className="w-4 h-4 text-gray-500" />
-                      <span className="text-xs text-gray-600">平均單價</span>
-                    </div>
-                    <div className="text-xl font-bold text-gray-800">
-                      {currentDetails.price
-                        ? formatPrice(currentDetails.price / 10000)
-                        : "N/A"}
-                      <span className="text-sm font-normal text-gray-500 ml-1">
-                        萬/坪
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {currentDetails.radar && (
-                <div>
-                  <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-[#003d82]" />
-                    各項指標表現
-                  </h4>
-
-                  {/* 雷達圖 */}
-                  <div className="w-full h-[240px] -ml-2 mb-4">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <RadarChart
-                        cx="50%"
-                        cy="50%"
-                        outerRadius="70%"
-                        data={currentDetails.radar.filter(
-                          (item: any) => !isNaN(item.value)
-                        )}
-                      >
-                        <PolarGrid stroke="#e5e7eb" />
-                        <PolarAngleAxis
-                          dataKey="subject"
-                          tick={{ fill: "#6b7280", fontSize: 10 }}
-                        />
-                        <PolarRadiusAxis
-                          angle={30}
-                          domain={[0, 1]}
-                          tick={false}
-                          axisLine={false}
-                        />
-                        <Radar
-                          name={currentStationInfo.name}
-                          dataKey="value"
-                          stroke="#003d82"
-                          strokeWidth={2}
-                          fill="#0056b3"
-                          fillOpacity={0.5}
-                        />
-                      </RadarChart>
-                    </ResponsiveContainer>
-                  </div>
-
-                  {/* 指標列表 - 移除漸層 */}
-                  <div className="space-y-2">
-                    {currentDetails.radar
-                      .filter((item: any) => !isNaN(item.value))
-                      .map((item: any, index: number) => {
-                        const IconComponent = getRadarIcon(item.subject);
-                        const percentage = (item.value * 100).toFixed(0);
-                        return (
-                          <div
-                            key={index}
-                            className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg"
-                          >
-                            <IconComponent className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-xs font-medium text-gray-700">
-                                  {item.subject}
-                                </span>
-                                <span className="text-xs font-bold text-[#003d82]">
-                                  {percentage}%
-                                </span>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-1.5">
-                                <div
-                                  className="bg-[#003d82] h-1.5 rounded-full transition-all duration-500"
-                                  style={{ width: `${percentage}%` }}
-                                ></div>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                  </div>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="p-4 bg-yellow-50 text-yellow-700 text-sm rounded-lg">
-              尚無此範圍詳細數據
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-gray-400">
-            <MapPin className="w-8 h-8" />
-          </div>
-          <p className="text-gray-500 font-medium text-lg">請選擇站點</p>
-          <p className="text-sm text-gray-400 mt-2">
-            點擊地圖上的捷運站圓點
-            <br />
-            查看詳細 TOD 分析資料
-          </p>
-        </div>
-      )}
-    </>
-  );
+  // 取得選定指標的標籤
+  const selectedIndicatorLabels = selectedIndicators
+    .map((id) => {
+      const indicator = INDICATORS.find((i) => i.id === id);
+      return indicator?.label;
+    })
+    .filter(Boolean) as string[];
 
   return (
     <div className="relative w-full h-screen flex flex-col md:flex-row bg-gray-50">
@@ -859,7 +420,22 @@ export default function MrtMap() {
           </div>
         </div>
         <div className="flex-1 overflow-y-auto p-5">
-          <ControlPanel />
+          <ControlPanel
+            displayMode={displayMode}
+            setDisplayMode={setDisplayMode}
+            selectedYear={selectedYear}
+            setSelectedYear={setSelectedYear}
+            selectedBuffer={selectedBuffer}
+            setSelectedBuffer={setSelectedBuffer}
+            selectedLine={selectedLine}
+            setSelectedLine={setSelectedLine}
+            selectedIndicators={selectedIndicators}
+            setSelectedIndicators={setSelectedIndicators}
+            onShowRanking={() => {
+              setShowRankingModal(true);
+              setRankingPage(0);
+            }}
+          />
         </div>
       </div>
 
@@ -899,7 +475,23 @@ export default function MrtMap() {
               </button>
             </div>
             <div className="p-4">
-              <ControlPanel />
+              <ControlPanel
+                displayMode={displayMode}
+                setDisplayMode={setDisplayMode}
+                selectedYear={selectedYear}
+                setSelectedYear={setSelectedYear}
+                selectedBuffer={selectedBuffer}
+                setSelectedBuffer={setSelectedBuffer}
+                selectedLine={selectedLine}
+                setSelectedLine={setSelectedLine}
+                selectedIndicators={selectedIndicators}
+                setSelectedIndicators={setSelectedIndicators}
+                onShowRanking={() => {
+                  setShowRankingModal(true);
+                  setRankingPage(0);
+                  setIsMobileMenuOpen(false);
+                }}
+              />
             </div>
           </div>
         </>
@@ -907,7 +499,7 @@ export default function MrtMap() {
 
       {/* 中間地圖區域 */}
       <div className="flex-1 relative bg-white overflow-auto">
-        {/* 桌面版圖例 - 切換式點擊 */}
+        {/* 桌面版圖例 */}
         <div className="hidden md:block absolute top-4 right-4 bg-white/95 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-gray-200 z-10">
           <h4 className="text-xs font-bold text-gray-500 uppercase mb-3 tracking-wider border-b border-gray-200 pb-2">
             路線圖例（點擊切換）
@@ -961,7 +553,7 @@ export default function MrtMap() {
           </div>
         </div>
 
-        {/* 手機版圖例 - 可收合但點擊路線不關閉 */}
+        {/* 手機版圖例 */}
         <div className="md:hidden absolute top-4 right-4 z-10">
           {!isLegendOpen && (
             <button
@@ -1037,7 +629,7 @@ export default function MrtMap() {
           )}
         </div>
 
-        {/* SVG 地圖容器 - 桌面版和手機版都居中 */}
+        {/* SVG 地圖 */}
         <div className="w-full h-full flex items-center justify-center">
           <svg
             version="1.1"
@@ -1117,7 +709,6 @@ export default function MrtMap() {
             {STATIONS.map((station) => {
               const stationName = station.name.replace("站", "");
               const hasAnyData = TOD_DATA[stationName] !== undefined;
-
               const displayValue =
                 displayMode === "tod"
                   ? getTodValue(station.id)
@@ -1153,7 +744,10 @@ export default function MrtMap() {
           </h2>
         </div>
         <div className="flex-1 overflow-y-auto p-5">
-          <InfoPanel />
+          <InfoPanel
+            stationInfo={currentStationInfo}
+            stationDetails={currentDetails}
+          />
         </div>
       </div>
 
@@ -1188,147 +782,29 @@ export default function MrtMap() {
               className="p-4 overflow-y-auto"
               style={{ maxHeight: "calc(80vh - 60px)" }}
             >
-              <InfoPanel />
+              <InfoPanel
+                stationInfo={currentStationInfo}
+                stationDetails={currentDetails}
+              />
             </div>
           </div>
         </>
       )}
 
-      {/* 排名視窗 Modal - 使用路線顏色 */}
-      {showRankingModal && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/50 z-40 animate-in fade-in duration-200"
-            onClick={() => setShowRankingModal(false)}
-          />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-2 md:p-4 pointer-events-none">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[95vh] md:max-h-[90vh] overflow-hidden pointer-events-auto animate-in zoom-in-95 duration-200">
-              <div className="p-4 md:p-6 border-b border-gray-200 bg-[#003d82]">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 md:gap-3">
-                    <Award className="w-5 h-5 md:w-6 md:h-6 text-white" />
-                    <div>
-                      <h2 className="text-lg md:text-xl font-bold text-white">
-                        站點排名 (第 {rankingPage + 1} / {totalPages} 頁)
-                      </h2>
-                      <p className="text-xs text-blue-100 mt-1">
-                        已選 {selectedIndicators.length} 項 - 點擊長條查看詳情 -
-                        Hover 查看分數與房價
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setShowRankingModal(false)}
-                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-                  >
-                    <X className="w-5 h-5 text-white" />
-                  </button>
-                </div>
-              </div>
-
-              <div
-                className="p-3 md:p-6 overflow-y-auto"
-                style={{ maxHeight: "calc(95vh - 100px)" }}
-              >
-                {/* 選定指標說明 */}
-                <div className="mb-4 md:mb-6 p-3 md:p-4 bg-blue-50 rounded-lg border border-blue-100">
-                  <div className="flex items-start gap-2">
-                    <Info className="w-4 h-4 text-[#003d82] mt-0.5 flex-shrink-0" />
-                    <div className="text-xs md:text-sm text-[#003d82]">
-                      <span className="font-bold">選定指標：</span>
-                      {selectedIndicators
-                        .map((id) => {
-                          const indicator = INDICATORS.find((i) => i.id === id);
-                          return indicator?.label;
-                        })
-                        .join("、")}
-                    </div>
-                  </div>
-                </div>
-
-                {/* 翻頁按鈕 */}
-                <div className="flex items-center justify-between mb-4">
-                  <button
-                    onClick={handlePrevPage}
-                    disabled={rankingPage === 0}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      rankingPage === 0
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-[#003d82] text-white hover:bg-[#002d5f]"
-                    }`}
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                    上一頁
-                  </button>
-
-                  <span className="text-sm text-gray-600">
-                    顯示 {rankingPage * ITEMS_PER_PAGE + 1} -{" "}
-                    {Math.min(
-                      (rankingPage + 1) * ITEMS_PER_PAGE,
-                      allRankingData.length
-                    )}{" "}
-                    / 共 {allRankingData.length} 站
-                  </span>
-
-                  <button
-                    onClick={handleNextPage}
-                    disabled={rankingPage >= totalPages - 1}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      rankingPage >= totalPages - 1
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-[#003d82] text-white hover:bg-[#002d5f]"
-                    }`}
-                  >
-                    下一頁
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* 長條圖 - 使用路線顏色 */}
-                <div className="w-full h-[400px] md:h-[600px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={rankingChartData}
-                      margin={{ top: 20, right: 10, left: 10, bottom: 80 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                      <XAxis
-                        dataKey="name"
-                        angle={-45}
-                        textAnchor="end"
-                        height={100}
-                        interval={0}
-                        tick={{ fontSize: 10 }}
-                      />
-                      <YAxis
-                        label={{
-                          value: "綜合分數",
-                          angle: -90,
-                          position: "insideLeft",
-                          style: { fontSize: 12 },
-                        }}
-                        domain={[0, 100]}
-                        tick={{ fontSize: 10 }}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Bar
-                        dataKey="score"
-                        radius={[8, 8, 0, 0]}
-                        onClick={handleBarClick}
-                        cursor="pointer"
-                      >
-                        {rankingChartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+      {/* 排名視窗 Modal */}
+      <RankingModal
+        isOpen={showRankingModal}
+        onClose={() => setShowRankingModal(false)}
+        rankingData={allRankingData}
+        selectedIndicators={selectedIndicators}
+        indicatorLabels={selectedIndicatorLabels}
+        currentPage={rankingPage}
+        totalPages={totalPages}
+        itemsPerPage={ITEMS_PER_PAGE}
+        onPrevPage={handlePrevPage}
+        onNextPage={handleNextPage}
+        onBarClick={handleBarClick}
+      />
     </div>
   );
 }

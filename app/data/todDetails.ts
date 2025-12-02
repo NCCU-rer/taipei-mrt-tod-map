@@ -6,8 +6,8 @@
 
 export interface TODDetailData {
   score: number;
-  count: number | null;  // 🔥 可能為 null
-  price: number | null;  // 🔥 可能為 null
+  count: number | null;
+  price: number | null;
   radar: Array<{ subject: string; value: number }>;
   raw: {
     步行友善度: number;
@@ -75,7 +75,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6013.56,
+        "score": 60.14,
         "count": 14,
         "price": 587575.25,
         "radar": [
@@ -177,7 +177,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 4700.3,
+        "score": 47.0,
         "count": 6,
         "price": 435176.84,
         "radar": [
@@ -279,7 +279,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7607.39,
+        "score": 76.07,
         "count": 78,
         "price": 558570.23,
         "radar": [
@@ -381,7 +381,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6810.16,
+        "score": 68.1,
         "count": 35,
         "price": 625041.6,
         "radar": [
@@ -483,7 +483,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6156.28,
+        "score": 61.56,
         "count": 18,
         "price": 574780.03,
         "radar": [
@@ -585,7 +585,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6409.94,
+        "score": 64.1,
         "count": 31,
         "price": 679267.13,
         "radar": [
@@ -687,7 +687,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6689.13,
+        "score": 66.89,
         "count": 27,
         "price": 774880.91,
         "radar": [
@@ -789,7 +789,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6976.35,
+        "score": 69.76,
         "count": 33,
         "price": 740160.45,
         "radar": [
@@ -891,7 +891,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6973.35,
+        "score": 69.73,
         "count": 29,
         "price": 819691.26,
         "radar": [
@@ -993,7 +993,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6555.49,
+        "score": 65.55,
         "count": 8,
         "price": 907800.34,
         "radar": [
@@ -1095,7 +1095,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 5536.09,
+        "score": 55.36,
         "count": 24,
         "price": 853053.08,
         "radar": [
@@ -1197,7 +1197,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7229.48,
+        "score": 72.29,
         "count": 5,
         "price": 795470.61,
         "radar": [
@@ -1299,7 +1299,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7925.05,
+        "score": 79.25,
         "count": 63,
         "price": 799723.19,
         "radar": [
@@ -1401,7 +1401,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7808.82,
+        "score": 78.09,
         "count": 40,
         "price": 891934.51,
         "radar": [
@@ -1503,7 +1503,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6744.85,
+        "score": 67.45,
         "count": null,
         "price": null,
         "radar": [
@@ -1605,7 +1605,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 4597.65,
+        "score": 45.98,
         "count": null,
         "price": null,
         "radar": [
@@ -1707,7 +1707,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 5263.31,
+        "score": 52.63,
         "count": 9,
         "price": 625678.58,
         "radar": [
@@ -1809,7 +1809,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 4929.49,
+        "score": 49.29,
         "count": 3,
         "price": 581418.16,
         "radar": [
@@ -1911,7 +1911,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 5850.87,
+        "score": 58.51,
         "count": 12,
         "price": 747642.27,
         "radar": [
@@ -2013,7 +2013,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 4975.24,
+        "score": 49.75,
         "count": 17,
         "price": 667382.22,
         "radar": [
@@ -2115,7 +2115,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 5194.83,
+        "score": 51.95,
         "count": 41,
         "price": 777657.05,
         "radar": [
@@ -2217,7 +2217,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7177.28,
+        "score": 71.77,
         "count": 77,
         "price": 868261.97,
         "radar": [
@@ -2319,7 +2319,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 8033.58,
+        "score": 80.34,
         "count": 86,
         "price": 983247.06,
         "radar": [
@@ -2421,7 +2421,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7485.65,
+        "score": 74.86,
         "count": 52,
         "price": 1206644.52,
         "radar": [
@@ -2523,7 +2523,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7528.25,
+        "score": 75.28,
         "count": 31,
         "price": 831297.04,
         "radar": [
@@ -2625,7 +2625,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 5429.11,
+        "score": 54.29,
         "count": 1,
         "price": 476076.02,
         "radar": [
@@ -2727,7 +2727,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6188.87,
+        "score": 61.89,
         "count": 10,
         "price": 708449.25,
         "radar": [
@@ -2829,7 +2829,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7405.47,
+        "score": 74.05,
         "count": 36,
         "price": 848475.17,
         "radar": [
@@ -2931,7 +2931,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7165.35,
+        "score": 71.65,
         "count": 76,
         "price": 913754.1,
         "radar": [
@@ -3033,7 +3033,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7150.76,
+        "score": 71.51,
         "count": 30,
         "price": 917193.35,
         "radar": [
@@ -3135,7 +3135,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7402.88,
+        "score": 74.03,
         "count": 22,
         "price": 1003243.2,
         "radar": [
@@ -3237,7 +3237,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7556.65,
+        "score": 75.57,
         "count": 38,
         "price": 1083862.44,
         "radar": [
@@ -3339,7 +3339,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7696.55,
+        "score": 76.97,
         "count": 47,
         "price": 992682.15,
         "radar": [
@@ -3441,7 +3441,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7102.37,
+        "score": 71.02,
         "count": 40,
         "price": 1002110.23,
         "radar": [
@@ -3543,7 +3543,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6486.69,
+        "score": 64.87,
         "count": 59,
         "price": 675931.22,
         "radar": [
@@ -3645,7 +3645,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7904.06,
+        "score": 79.04,
         "count": 13,
         "price": 610009.21,
         "radar": [
@@ -3747,7 +3747,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7081.81,
+        "score": 70.82,
         "count": 24,
         "price": 926685.67,
         "radar": [
@@ -3849,7 +3849,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6864.84,
+        "score": 68.65,
         "count": 1,
         "price": 636991.71,
         "radar": [
@@ -3951,7 +3951,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6623.09,
+        "score": 66.23,
         "count": 14,
         "price": 1197015.78,
         "radar": [
@@ -4053,7 +4053,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7686.56,
+        "score": 76.87,
         "count": 63,
         "price": 1144988.92,
         "radar": [
@@ -4155,7 +4155,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7088.56,
+        "score": 70.89,
         "count": 18,
         "price": 953096.56,
         "radar": [
@@ -4257,7 +4257,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7478.12,
+        "score": 74.78,
         "count": 4,
         "price": 842405.75,
         "radar": [
@@ -4359,7 +4359,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7774.3,
+        "score": 77.74,
         "count": 24,
         "price": 812849.15,
         "radar": [
@@ -4461,7 +4461,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6240.11,
+        "score": 62.4,
         "count": 11,
         "price": 710292.69,
         "radar": [
@@ -4563,7 +4563,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6667.12,
+        "score": 66.67,
         "count": 48,
         "price": 1080115.05,
         "radar": [
@@ -4665,7 +4665,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6841.28,
+        "score": 68.41,
         "count": 19,
         "price": 614075.95,
         "radar": [
@@ -4767,7 +4767,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7185.46,
+        "score": 71.85,
         "count": 20,
         "price": 779547.76,
         "radar": [
@@ -4869,7 +4869,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6216.03,
+        "score": 62.16,
         "count": 21,
         "price": 710047.73,
         "radar": [
@@ -4971,7 +4971,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6980.17,
+        "score": 69.8,
         "count": 67,
         "price": 749433.45,
         "radar": [
@@ -5073,7 +5073,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 5437.51,
+        "score": 54.38,
         "count": 14,
         "price": 616937.18,
         "radar": [
@@ -5175,7 +5175,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 5385.6,
+        "score": 53.86,
         "count": 71,
         "price": 771914.97,
         "radar": [
@@ -5277,7 +5277,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6919.27,
+        "score": 69.19,
         "count": 45,
         "price": 705047.3,
         "radar": [
@@ -5379,7 +5379,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6549.44,
+        "score": 65.49,
         "count": 55,
         "price": 900898.85,
         "radar": [
@@ -5481,7 +5481,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6252.05,
+        "score": 62.52,
         "count": 50,
         "price": 646969.44,
         "radar": [
@@ -5583,7 +5583,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 5703.6,
+        "score": 57.04,
         "count": 13,
         "price": 914765.47,
         "radar": [
@@ -5685,7 +5685,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 3898.86,
+        "score": 38.99,
         "count": 18,
         "price": 523879.96,
         "radar": [
@@ -5787,7 +5787,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7456.35,
+        "score": 74.56,
         "count": 37,
         "price": 847323.63,
         "radar": [
@@ -5889,7 +5889,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7638.03,
+        "score": 76.38,
         "count": 92,
         "price": 726127.65,
         "radar": [
@@ -5991,7 +5991,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 5229.07,
+        "score": 52.29,
         "count": 1,
         "price": 676360.31,
         "radar": [
@@ -6093,7 +6093,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 8039.96,
+        "score": 80.4,
         "count": 50,
         "price": 783388.41,
         "radar": [
@@ -6195,7 +6195,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7480.42,
+        "score": 74.8,
         "count": 38,
         "price": 1140380.91,
         "radar": [
@@ -6297,7 +6297,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7419.37,
+        "score": 74.19,
         "count": 25,
         "price": 733597.96,
         "radar": [
@@ -6399,7 +6399,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7796.05,
+        "score": 77.96,
         "count": 12,
         "price": 1191941.05,
         "radar": [
@@ -6501,7 +6501,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7445.63,
+        "score": 74.46,
         "count": 9,
         "price": 1049082.79,
         "radar": [
@@ -6603,7 +6603,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7261.09,
+        "score": 72.61,
         "count": 57,
         "price": 1003210.79,
         "radar": [
@@ -6705,7 +6705,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6153.64,
+        "score": 61.54,
         "count": 22,
         "price": 1076061.08,
         "radar": [
@@ -6807,7 +6807,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7793.79,
+        "score": 77.94,
         "count": 48,
         "price": 1042089.32,
         "radar": [
@@ -6909,7 +6909,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7810.53,
+        "score": 78.11,
         "count": 47,
         "price": 986010.18,
         "radar": [
@@ -7011,7 +7011,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7415.59,
+        "score": 74.16,
         "count": 31,
         "price": 816511.7,
         "radar": [
@@ -7113,7 +7113,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7229.72,
+        "score": 72.3,
         "count": 75,
         "price": 816638.59,
         "radar": [
@@ -7215,7 +7215,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6959.33,
+        "score": 69.59,
         "count": 45,
         "price": 1237115.27,
         "radar": [
@@ -7317,7 +7317,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 6777.55,
+        "score": 67.78,
         "count": 7,
         "price": 811267.58,
         "radar": [
@@ -7419,7 +7419,7 @@ export const TOD_DETAILS: Record<string, Record<string, Record<string, TODDetail
         }
       },
       "300": {
-        "score": 7746.79,
+        "score": 77.47,
         "count": 27,
         "price": 1072026.77,
         "radar": [
