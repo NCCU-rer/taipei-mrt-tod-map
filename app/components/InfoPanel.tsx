@@ -41,10 +41,11 @@ const getRadarIcon = (subject: string) => {
   return Activity;
 };
 
+// 🔥 修正型別定義
 interface StationDetails {
   score?: number;
-  count?: number;
-  price?: number | null | undefined;
+  count?: number | null; // 🔥 加上 | null
+  price?: number | null;
   radar?: Array<{
     subject: string;
     value: number;
@@ -165,7 +166,10 @@ export default function InfoPanel({
                   <span className="text-xs text-gray-600">交易量</span>
                 </div>
                 <div className="text-xl font-bold text-gray-800">
-                  {stationDetails.count ?? "N/A"}
+                  {stationDetails.count !== null &&
+                  stationDetails.count !== undefined
+                    ? stationDetails.count
+                    : "N/A"}
                   <span className="text-sm font-normal text-gray-500 ml-1">
                     件
                   </span>
@@ -178,7 +182,8 @@ export default function InfoPanel({
                   <span className="text-xs text-gray-600">平均單價</span>
                 </div>
                 <div className="text-xl font-bold text-gray-800">
-                  {stationDetails.price
+                  {stationDetails.price !== null &&
+                  stationDetails.price !== undefined
                     ? formatPrice(stationDetails.price / 10000)
                     : "N/A"}
                   <span className="text-sm font-normal text-gray-500 ml-1">
