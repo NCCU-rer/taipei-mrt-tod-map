@@ -44,7 +44,7 @@ const getRadarIcon = (subject: string) => {
 interface StationDetails {
   score?: number;
   count?: number;
-  price?: number | null;
+  price?: number | null | undefined;
   radar?: Array<{
     subject: string;
     value: number;
