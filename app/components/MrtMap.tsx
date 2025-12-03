@@ -73,7 +73,8 @@ const StationNode: React.FC<StationNodeProps> = ({
       case "top":
         return { x: 0, y: -verticalOffset };
       case "bottom":
-        return { x: 0, y: verticalOffset };
+        // return { x: 0, y: verticalOffset };
+        return { x: 0, y: 35 };
       case "left":
         return { x: -horizontalOffset, y: 0 };
       case "right":
@@ -663,14 +664,14 @@ export default function MrtMap() {
         <div className="w-full h-full flex items-center justify-center">
           <svg
             version="1.1"
-            viewBox="0 0 1369.96 1150"
+            viewBox="80 -30 1269.96 1150"
             className="w-full h-auto max-w-full max-h-full"
             preserveAspectRatio="xMidYMid meet"
             onClick={() => setSelectedStationId(null)}
           >
             <g fill="none" strokeWidth="10" style={{ pointerEvents: "none" }}>
               <path
-                d="m 449.7109 103.2889 v -49.999998"
+                d="m 460 102 v -49.999998"
                 stroke="#f98e99"
                 style={{
                   opacity:
@@ -679,7 +680,7 @@ export default function MrtMap() {
                 }}
               ></path>
               <path
-                d="m 664.7109 1023.2889 h -45"
+                d="m 760 1035 v 75"
                 stroke="#cce226"
                 style={{
                   opacity:
@@ -688,7 +689,7 @@ export default function MrtMap() {
                 }}
               ></path>
               <path
-                d="m 1069.7109 553.2889 h -605 c -17.59453 0 -40 22.40547 -40 40 v 125 c 0 14.26086 15.73915 30 30 30 h 85 l 110 110 c 7.35863 7.35863 15 18.39002 15 25 v 220"
+                d="m 1069.7109 553.2889 h -605 c -17.59453 0 -40 22.40547 -40 40 v 125 c 0 14.26086 15.73915 30 30 30 h 85 l 110 110 c 7.35863 7.35863 15 18.39002 15 25 v 120 c 0 14.26086 15.73915 30 30 30  h 220"
                 stroke="#007c59"
                 style={{
                   opacity:
@@ -697,7 +698,7 @@ export default function MrtMap() {
                 }}
               ></path>
               <path
-                d="m 59.710902 103.2889 h 405 c 75 0 75 0 75 75 v 570 h 525"
+                d="m 125 102 h 340 c 75 0 75 0 75 75 v 570 h 525"
                 stroke="#d12d33"
                 style={{
                   opacity:
@@ -706,7 +707,8 @@ export default function MrtMap() {
                 }}
               ></path>
               <path
-                d="m 89.7109 943.2889 l 280 -280 c 15 -15 25 -15 55 -15 h 800"
+                // d="m 89.7109 943.2889 l 280 -280 c 15 -15 25 -15 55 -15 h 800"
+                d="m 276 1058 v -25 -280 l 85 -90 c 15 -15 25 -15 55 -15 h 800"
                 stroke="#0072c6"
                 style={{
                   opacity:
@@ -731,7 +733,7 @@ export default function MrtMap() {
                   transition: "opacity 0.3s ease-in-out",
                 }}
               >
-                <path d="m 409.7109 983.28889 l 235 -234.99999 v -270 c 0 -20 -10 -30 -30 -30 h -180 l -365 365"></path>
+                <path d="m 409.7109 983.28889 l 235 -234.99999 v -270 c 0 -20 -10 -30 -30 -30 h -180 l -287 287 v 125"></path>
                 <path d="M 434.73522,447.69034 209.7109,223.2889"></path>
               </g>
             </g>
