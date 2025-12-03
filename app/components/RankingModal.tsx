@@ -134,7 +134,7 @@ const getDisplayColors = (
 
 // 🔥 自訂長條圖形狀 - 支援分半顏色
 const CustomBar = (props: any) => {
-  const { fill, x, y, width, height, payload } = props;
+  const { fill, x, y, width, height } = props;
 
   if (Array.isArray(fill)) {
     const colors = fill;
@@ -305,9 +305,6 @@ export default function RankingModal({
                   <h2 className="text-lg md:text-xl font-bold text-white">
                     站點排名 (第 {internalPage + 1} / {filteredTotalPages} 頁)
                   </h2>
-                  {/* <p className="text-xs text-blue-100 mt-1">
-                    已選 {selectedIndicators.length} 項
-                  </p> */}
                 </div>
               </div>
               <button
@@ -466,10 +463,6 @@ export default function RankingModal({
                         tick={{ fontSize: 10, fill: "#000000" }}
                       />
                       <Tooltip content={<CustomTooltip />} />
-                      {/* <Legend
-                        wrapperStyle={{ paddingTop: "20px" }}
-                        iconType="circle"
-                      /> */}
                       {/* 長條圖：分數 */}
                       <Bar
                         yAxisId="left"
@@ -484,14 +477,18 @@ export default function RankingModal({
                             entry,
                             selectedLineFilter
                           );
-                          const fillValue =
+                          // 🔥 修正：確保 fillValue 是 string 或 string[]
+                          const fillValue: string | string[] =
                             colors.length > 1 ? colors : colors[0];
                           return (
-                            <Cell key={`cell-${index}`} fill={fillValue} />
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={fillValue as any}
+                            />
                           );
                         })}
                       </Bar>
-                      {/* 🔥 折線圖：房價 (黑色) */}
+                      {/* 🔥 折線圖：房價 (黑色半透明) */}
                       <Line
                         yAxisId="right"
                         type="monotone"
