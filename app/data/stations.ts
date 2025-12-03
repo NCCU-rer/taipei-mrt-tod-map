@@ -2,21 +2,9 @@ import { StationData } from "../types/mrt";
 
 // 站點座標資料 (使用精準校正後的座標)
 export const STATIONS: StationData[] = [
-  // --- 紅線 (淡水信義) ---
-  {
-    id: "R28",
-    name: "淡水",
-    x: 55,
-    y: 102,
-    labelPosition: "bottom",
-  },
-  {
-    id: "R27",
-    name: "紅樹林",
-    x: 120,
-    y: 102,
-    labelPosition: "bottom",
-  },
+  // --- 紅線 (淡水信義線) ---
+  { id: "R28", name: "淡水", x: 55, y: 102, labelPosition: "bottom" },
+  { id: "R27", name: "紅樹林", x: 120, y: 102, labelPosition: "bottom" },
   { id: "R26", name: "竹圍", x: 186, y: 102, labelPosition: "bottom" },
   { id: "R25", name: "關渡", x: 252, y: 102, labelPosition: "bottom" },
   { id: "R24", name: "忠義", x: 318, y: 102, labelPosition: "bottom" },
@@ -99,7 +87,7 @@ export const STATIONS: StationData[] = [
   { id: "R03", name: "台北101/世貿", x: 952, y: 747, labelPosition: "top" },
   { id: "R02", name: "象山", x: 1059, y: 747, labelPosition: "top" },
 
-  // --- 藍線 (板南) ---
+  // --- 藍線 (板南線) ---
   { id: "BL01", name: "頂埔", x: 90, y: 945, labelPosition: "left" },
   { id: "BL02", name: "永寧", x: 121, y: 913, labelPosition: "left" },
   { id: "BL03", name: "土城", x: 152, y: 886, labelPosition: "left" },
@@ -119,34 +107,33 @@ export const STATIONS: StationData[] = [
     labelOffset: { x: 25, y: 25 },
     lines: ["BL", "G"], // 藍線、綠線轉乘
   },
-  { id: "BL12", name: "善導寺", x: 595, y: 648, labelPosition: "top" },
+  // 台北車站已在 R10 定義（轉乘站）
+  { id: "BL13", name: "善導寺", x: 595, y: 648, labelPosition: "top" },
   {
-    id: "BL13",
+    id: "BL14",
     name: "忠孝新生",
     x: 645,
     y: 648,
     labelPosition: "bottom",
-    // labelOffset: { x: -35, y: 30 },
     lines: ["BL", "O"], // 藍線、橘線轉乘
   },
   {
-    id: "BL14",
+    id: "BL15",
     name: "忠孝復興",
     x: 754,
     y: 647,
     labelPosition: "bottom",
-    // labelOffset: { x: -35, y: 25 },
     lines: ["BL", "BR"], // 藍線、文湖線轉乘
   },
-  { id: "BL15", name: "忠孝敦化", x: 810, y: 647, labelPosition: "top" },
-  { id: "BL16", name: "國父紀念館", x: 865, y: 647, labelPosition: "bottom" },
-  { id: "BL17", name: "市政府", x: 929, y: 648, labelPosition: "top" },
-  { id: "BL18", name: "永春", x: 994, y: 647, labelPosition: "bottom" },
-  { id: "BL19", name: "後山埤", x: 1047, y: 646, labelPosition: "top" },
-  { id: "BL20", name: "昆陽", x: 1101, y: 646, labelPosition: "bottom" },
-  { id: "BL21", name: "南港", x: 1160, y: 646, labelPosition: "top" },
+  { id: "BL16", name: "忠孝敦化", x: 810, y: 647, labelPosition: "top" },
+  { id: "BL17", name: "國父紀念館", x: 865, y: 647, labelPosition: "bottom" },
+  { id: "BL18", name: "市政府", x: 929, y: 648, labelPosition: "top" },
+  { id: "BL19", name: "永春", x: 994, y: 647, labelPosition: "bottom" },
+  { id: "BL20", name: "後山埤", x: 1047, y: 646, labelPosition: "top" },
+  { id: "BL21", name: "昆陽", x: 1101, y: 646, labelPosition: "bottom" },
+  { id: "BL22", name: "南港", x: 1160, y: 646, labelPosition: "top" },
   {
-    id: "BL22",
+    id: "BL23",
     name: "南港展覽館",
     x: 1226,
     y: 646,
@@ -154,7 +141,7 @@ export const STATIONS: StationData[] = [
     lines: ["BL", "BR"], // 藍線、文湖線轉乘
   },
 
-  // --- 綠線 (松山新店) ---
+  // --- 綠線 (松山新店線) ---
   { id: "G19", name: "松山", x: 1062, y: 550, labelPosition: "bottom" },
   { id: "G18", name: "南京三民", x: 953, y: 552, labelPosition: "bottom" },
   { id: "G17", name: "台北小巨蛋", x: 848, y: 552, labelPosition: "bottom" },
@@ -176,8 +163,11 @@ export const STATIONS: StationData[] = [
     labelOffset: { x: -35, y: 25 },
     lines: ["G", "O"], // 綠線、橘線轉乘
   },
-  { id: "G12", name: "北門", x: 437, y: 566, labelPosition: "left" },
+  // 中山已在 R11 定義（轉乘站）
+  { id: "G13", name: "北門", x: 437, y: 566, labelPosition: "left" },
+  // 西門已在 BL11 定義（轉乘站）
   { id: "G11", name: "小南門", x: 432, y: 735, labelPosition: "left" },
+  // 中正紀念堂已在 R08 定義（轉乘站）
   {
     id: "G09",
     name: "古亭",
@@ -196,30 +186,35 @@ export const STATIONS: StationData[] = [
   { id: "G02", name: "新店區公所", x: 665, y: 1068, labelPosition: "right" },
   { id: "G01", name: "新店", x: 665, y: 1105, labelPosition: "right" },
 
-  // --- 橘線 (中和新蘆) ---
+  // --- 橘線 (中和新蘆線) ---
   { id: "O01", name: "南勢角", x: 413, y: 979, labelPosition: "left" },
   { id: "O02", name: "景安", x: 460, y: 932, labelPosition: "left" },
   { id: "O03", name: "永安市場", x: 504, y: 888, labelPosition: "left" },
   { id: "O04", name: "頂溪", x: 549, y: 844, labelPosition: "left" },
-  { id: "O11", name: "中山國小", x: 638, y: 456, labelPosition: "right" },
-  { id: "O12", name: "行天宮", x: 644, y: 503, labelPosition: "right" },
-  { id: "O13", name: "大橋頭", x: 434, y: 448, labelPosition: "left" },
-  { id: "O14", name: "台北橋", x: 394, y: 488, labelPosition: "left" },
-  { id: "O15", name: "菜寮", x: 353, y: 529, labelPosition: "left" },
-  { id: "O16", name: "三重", x: 312, y: 570, labelPosition: "left" },
-  { id: "O17", name: "先嗇宮", x: 271, y: 611, labelPosition: "left" },
-  { id: "O18", name: "頭前庄", x: 230, y: 652, labelPosition: "left" },
-  { id: "O19", name: "新莊", x: 188, y: 693, labelPosition: "left" },
-  { id: "O20", name: "輔大", x: 148, y: 734, labelPosition: "left" },
-  { id: "O21", name: "丹鳳", x: 107, y: 775, labelPosition: "left" },
-  { id: "O22", name: "迴龍", x: 68, y: 815, labelPosition: "left" },
+  // 古亭已在 G09 定義（轉乘站）
+  // 東門已在 R07 定義（轉乘站）
+  // 忠孝新生已在 BL14 定義（轉乘站）
+  // 松江南京已在 G15 定義（轉乘站）
+  { id: "O09", name: "行天宮", x: 644, y: 503, labelPosition: "right" },
+  { id: "O10", name: "中山國小", x: 638, y: 456, labelPosition: "right" },
+  // 民權西路已在 R13 定義（轉乘站）
+  { id: "O12", name: "大橋頭", x: 434, y: 448, labelPosition: "left" },
+  { id: "O13", name: "台北橋", x: 394, y: 488, labelPosition: "left" },
+  { id: "O14", name: "菜寮", x: 353, y: 529, labelPosition: "left" },
+  { id: "O15", name: "三重", x: 312, y: 570, labelPosition: "left" },
+  { id: "O16", name: "先嗇宮", x: 271, y: 611, labelPosition: "left" },
+  { id: "O17", name: "頭前庄", x: 230, y: 652, labelPosition: "left" },
+  { id: "O18", name: "新莊", x: 188, y: 693, labelPosition: "left" },
+  { id: "O19", name: "輔大", x: 148, y: 734, labelPosition: "left" },
+  { id: "O20", name: "丹鳳", x: 107, y: 775, labelPosition: "left" },
+  { id: "O21", name: "迴龍", x: 68, y: 815, labelPosition: "left" },
   { id: "O50", name: "三重國小", x: 394, y: 406, labelPosition: "left" },
   { id: "O51", name: "三和國中", x: 348, y: 362, labelPosition: "left" },
   { id: "O52", name: "徐匯中學", x: 304, y: 316, labelPosition: "left" },
   { id: "O53", name: "三民高中", x: 258, y: 272, labelPosition: "left" },
   { id: "O54", name: "蘆洲", x: 214, y: 226, labelPosition: "left" },
 
-  // --- 文湖線 (Brown) ---
+  // --- 文湖線 (棕線) ---
   { id: "BR01", name: "動物園", x: 1166, y: 944, labelPosition: "bottom" },
   { id: "BR02", name: "木柵", x: 1084, y: 943, labelPosition: "bottom" },
   { id: "BR03", name: "萬芳社區", x: 998, y: 943, labelPosition: "bottom" },
@@ -228,6 +223,9 @@ export const STATIONS: StationData[] = [
   { id: "BR06", name: "麟光", x: 772, y: 918, labelPosition: "right" },
   { id: "BR07", name: "六張犁", x: 755, y: 861, labelPosition: "right" },
   { id: "BR08", name: "科技大樓", x: 755, y: 808, labelPosition: "right" },
+  // 大安已在 R05 定義（轉乘站）
+  // 忠孝復興已在 BL15 定義（轉乘站）
+  // 南京復興已在 G16 定義（轉乘站）
   { id: "BR12", name: "中山國中", x: 756, y: 489, labelPosition: "right" },
   { id: "BR13", name: "松山機場", x: 755, y: 424, labelPosition: "right" },
   { id: "BR14", name: "大直", x: 786, y: 373, labelPosition: "bottom" },
@@ -240,4 +238,5 @@ export const STATIONS: StationData[] = [
   { id: "BR21", name: "葫洲", x: 1226, y: 475, labelPosition: "right" },
   { id: "BR22", name: "東湖", x: 1226, y: 535, labelPosition: "right" },
   { id: "BR23", name: "南港軟體園區", x: 1226, y: 595, labelPosition: "right" },
+  // 南港展覽館已在 BL23 定義（轉乘站）
 ];

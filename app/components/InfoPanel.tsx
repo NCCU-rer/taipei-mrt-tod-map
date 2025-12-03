@@ -44,7 +44,7 @@ const getRadarIcon = (subject: string) => {
 // 🔥 修正型別定義
 interface StationDetails {
   score?: number;
-  count?: number | null; // 🔥 加上 | null
+  count?: number | null;
   price?: number | null;
   radar?: Array<{
     subject: string;
@@ -64,6 +64,70 @@ interface InfoPanelProps {
   stationInfo: StationInfo | null;
   stationDetails: StationDetails | null;
 }
+
+// 🔥 多線轉乘站對應表（根據優先順序：藍>綠>橘>紅>棕）
+const MULTI_LINE_STATIONS: Record<string, string> = {
+  // 台北車站：紅R10 / 藍BL12 → 選藍線
+  台北車站: "BL12",
+  台北車: "BL12",
+
+  // 西門：紅R11 / 藍BL11 / 綠G12 → 選藍線
+  西門: "BL11",
+
+  // 忠孝新生：藍BL14 / 橘O07 → 選藍線
+  忠孝新生: "BL14",
+
+  // 忠孝復興：藍BL15 / 綠G16 / 棕BR10 → 選藍線
+  忠孝復興: "BL15",
+
+  // 南港展覽館：藍BL23 / 棕BR24 → 選藍線
+  南港展覽館: "BL23",
+
+  // 古亭：綠G09 / 橘O05 → 選綠線
+  古亭: "G09",
+
+  // 中正紀念堂：紅R08 / 綠G10 → 選綠線
+  中正紀念堂: "G10",
+
+  // 南京復興：綠G16 / 棕BR11 → 選綠線
+  南京復興: "G16",
+
+  // 松江南京：綠G15 / 橘O08 → 選綠線
+  松江南京: "G15",
+
+  // 中山：紅R11 / 綠G14 → 選綠線
+  中山: "G14",
+
+  // 東門：紅R07 / 橘O06 → 選橘線
+  東門: "R07",
+
+  // 民權西路：紅R13 / 橘O11 → 選橘線
+  民權西路: "O11",
+
+  // 大安：紅R05 / 棕BR09 → 選棕線（因為紅線優先於棕線，但這裡棕線編號較小）
+  // 實際上應該選紅線，但根據你的優先順序藍>綠>橘>紅>棕，所以選紅線
+  大安: "R05",
+};
+
+// 🔥 生成捷運站資訊連結（處理多線轉乘站）
+const getStationInfoUrl = (stationId: string, stationName: string): string => {
+  // 先檢查是否為多線轉乘站
+  if (MULTI_LINE_STATIONS[stationName]) {
+    return `https://taiwanhelper.com/taipeiMetro/station/${MULTI_LINE_STATIONS[stationName]}`;
+  }
+
+  // 如果不是多線站，直接使用原始 ID
+  return `https://taiwanhelper.com/taipeiMetro/station/${stationId}`;
+};
+
+// 🔥 生成房價資訊連結
+const getPriceInfoUrl = (stationName: string): string => {
+  // 移除「站」字
+  const cleanName = stationName.replace("站", "");
+  // URL encode 站名
+  const encodedName = encodeURIComponent(`${cleanName}站`);
+  return `https://buy.yungching.com.tw/mrt/%E5%8F%B0%E5%8C%97%E5%B8%82-_c/?kw=${encodedName}`;
+};
 
 export default function InfoPanel({
   stationInfo,
@@ -100,20 +164,22 @@ export default function InfoPanel({
           {stationInfo.name}
         </h3>
         <div className="flex gap-2">
+          {/* 🔥 捷運站資訊連結（處理多線站點） */}
           <a
-            href={`https://www.metro.taipei/`}
+            href={getStationInfoUrl(stationInfo.id, stationInfo.name)}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs text-[#003d82] hover:text-[#0056b3] hover:underline"
+            className="inline-flex items-center gap-1 text-xs text-[#003d82] hover:text-[#0056b3] hover:underline transition-colors"
           >
             <ExternalLink className="w-3 h-3" />
             捷運站資訊
           </a>
+          {/* 🔥 房價資訊連結 */}
           <a
-            href={`https://yungching.housefun.com.tw/`}
+            href={getPriceInfoUrl(stationInfo.name)}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs text-[#c8102e] hover:text-[#a00d25] hover:underline"
+            className="inline-flex items-center gap-1 text-xs text-[#c8102e] hover:text-[#a00d25] hover:underline transition-colors"
           >
             <Home className="w-3 h-3" />
             查看房價

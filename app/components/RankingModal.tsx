@@ -1,17 +1,20 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
-  BarChart,
+  ComposedChart,
   Bar,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Cell,
   ResponsiveContainer,
+  Legend,
 } from "recharts";
-import { X, Award, Info, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Award, Info, ChevronLeft, ChevronRight, Train } from "lucide-react";
+import { LINES } from "../data/lines";
 
 interface RankingData {
   name: string;
@@ -19,7 +22,9 @@ interface RankingData {
   rank: number;
   stationId: string;
   color: string;
+  colors?: string[]; // 支援多色（轉乘站）
   price: string | null;
+  lines?: string[]; // 站點所屬的多條路線
 }
 
 interface RankingModalProps {
@@ -36,7 +41,7 @@ interface RankingModalProps {
   onBarClick: (data: any) => void;
 }
 
-// 自訂 Tooltip
+// 🔥 自訂 Tooltip - 同時顯示分數和房價
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
@@ -52,10 +57,10 @@ const CustomTooltip = ({ active, payload }: any) => {
             <span className="text-gray-600">綜合分數：</span>
             <span className="font-bold text-[#003d82]">{data.score} 分</span>
           </div>
-          {data.price && (
+          {data.priceValue && (
             <div className="flex items-center justify-between gap-4">
               <span className="text-gray-600">平均單價：</span>
-              <span className="font-bold text-green-600">
+              <span className="font-bold text-gray-900">
                 {data.price} 萬/坪
               </span>
             </div>
@@ -65,6 +70,157 @@ const CustomTooltip = ({ active, payload }: any) => {
     );
   }
   return null;
+};
+
+// 判斷站點是否屬於指定路線（支援轉乘站）
+const stationBelongsToLine = (
+  station: RankingData,
+  lineId: string
+): boolean => {
+  if (station.lines && station.lines.length > 0) {
+    return station.lines.includes(lineId);
+  }
+
+  if (lineId === "BR") {
+    return station.stationId.startsWith("BR");
+  }
+  if (lineId === "R") {
+    return (
+      station.stationId.startsWith("R") && !station.stationId.startsWith("BR")
+    );
+  }
+  if (lineId === "G") {
+    return station.stationId.startsWith("G");
+  }
+  if (lineId === "O") {
+    return station.stationId.startsWith("O");
+  }
+  if (lineId === "BL") {
+    return station.stationId.startsWith("BL");
+  }
+  if (lineId === "Y") {
+    return station.stationId.startsWith("Y");
+  }
+
+  return false;
+};
+
+// 取得站點的顯示顏色（根據篩選路線）
+const getDisplayColor = (
+  station: RankingData,
+  selectedLineFilter: string
+): string => {
+  if (selectedLineFilter !== "all" && station.lines) {
+    const line = LINES.find((l) => l.id === selectedLineFilter);
+    return line?.color || station.color;
+  }
+  return station.color;
+};
+
+// 取得站點的所有顏色（用於分半顯示）
+const getDisplayColors = (
+  station: RankingData,
+  selectedLineFilter: string
+): string[] => {
+  if (
+    selectedLineFilter === "all" &&
+    station.colors &&
+    station.colors.length > 1
+  ) {
+    return station.colors;
+  }
+  return [getDisplayColor(station, selectedLineFilter)];
+};
+
+// 🔥 自訂長條圖形狀 - 支援分半顏色
+const CustomBar = (props: any) => {
+  const { fill, x, y, width, height, payload } = props;
+
+  if (Array.isArray(fill)) {
+    const colors = fill;
+    const radius = 8;
+
+    if (colors.length === 2) {
+      const halfWidth = width / 2;
+      return (
+        <g>
+          <path
+            d={`
+              M ${x} ${y + height}
+              L ${x} ${y + radius}
+              Q ${x} ${y} ${x + radius} ${y}
+              L ${x + halfWidth} ${y}
+              L ${x + halfWidth} ${y + height}
+              Z
+            `}
+            fill={colors[0]}
+          />
+          <path
+            d={`
+              M ${x + halfWidth} ${y}
+              L ${x + width - radius} ${y}
+              Q ${x + width} ${y} ${x + width} ${y + radius}
+              L ${x + width} ${y + height}
+              L ${x + halfWidth} ${y + height}
+              Z
+            `}
+            fill={colors[1]}
+          />
+        </g>
+      );
+    } else if (colors.length === 3) {
+      const thirdWidth = width / 3;
+      return (
+        <g>
+          <path
+            d={`
+              M ${x} ${y + height}
+              L ${x} ${y + radius}
+              Q ${x} ${y} ${x + radius} ${y}
+              L ${x + thirdWidth} ${y}
+              L ${x + thirdWidth} ${y + height}
+              Z
+            `}
+            fill={colors[0]}
+          />
+          <rect
+            x={x + thirdWidth}
+            y={y}
+            width={thirdWidth}
+            height={height}
+            fill={colors[1]}
+          />
+          <path
+            d={`
+              M ${x + thirdWidth * 2} ${y}
+              L ${x + width - radius} ${y}
+              Q ${x + width} ${y} ${x + width} ${y + radius}
+              L ${x + width} ${y + height}
+              L ${x + thirdWidth * 2} ${y + height}
+              Z
+            `}
+            fill={colors[2]}
+          />
+        </g>
+      );
+    }
+  }
+
+  const radius = 8;
+  return (
+    <path
+      d={`
+        M ${x} ${y + height}
+        L ${x} ${y + radius}
+        Q ${x} ${y} ${x + radius} ${y}
+        L ${x + width - radius} ${y}
+        Q ${x + width} ${y} ${x + width} ${y + radius}
+        L ${x + width} ${y + height}
+        Z
+      `}
+      fill={fill}
+    />
+  );
 };
 
 export default function RankingModal({
@@ -80,12 +236,54 @@ export default function RankingModal({
   onNextPage,
   onBarClick,
 }: RankingModalProps) {
-  if (!isOpen) return null;
+  const [selectedLineFilter, setSelectedLineFilter] = useState<string>("all");
+  const [internalPage, setInternalPage] = useState(0);
 
-  const currentPageData = rankingData.slice(
-    currentPage * itemsPerPage,
-    (currentPage + 1) * itemsPerPage
+  // 根據路線篩選資料
+  const filteredData =
+    selectedLineFilter === "all"
+      ? rankingData
+      : rankingData.filter((item) =>
+          stationBelongsToLine(item, selectedLineFilter)
+        );
+
+  // 重新計算分頁
+  const filteredTotalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+  const currentPageData = filteredData.slice(
+    internalPage * itemsPerPage,
+    (internalPage + 1) * itemsPerPage
   );
+
+  // 🔥 準備合併圖表資料
+  const chartData = currentPageData.map((item) => ({
+    ...item,
+    priceValue: item.price ? parseFloat(item.price) : null,
+  }));
+
+  // 計算有房價資料的站點數量
+  const priceCount = chartData.filter(
+    (item) => item.priceValue !== null
+  ).length;
+
+  // 路線切換時重置頁碼
+  useEffect(() => {
+    setInternalPage(0);
+  }, [selectedLineFilter]);
+
+  const handlePrevPage = () => {
+    if (internalPage > 0) {
+      setInternalPage(internalPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (internalPage < filteredTotalPages - 1) {
+      setInternalPage(internalPage + 1);
+    }
+  };
+
+  if (!isOpen) return null;
 
   return (
     <>
@@ -105,12 +303,11 @@ export default function RankingModal({
                 <Award className="w-5 h-5 md:w-6 md:h-6 text-white" />
                 <div>
                   <h2 className="text-lg md:text-xl font-bold text-white">
-                    站點排名 (第 {currentPage + 1} / {totalPages} 頁)
+                    站點排名 (第 {internalPage + 1} / {filteredTotalPages} 頁)
                   </h2>
-                  <p className="text-xs text-blue-100 mt-1">
-                    已選 {selectedIndicators.length} 項 - 點擊長條查看詳情 -
-                    Hover 查看分數與房價
-                  </p>
+                  {/* <p className="text-xs text-blue-100 mt-1">
+                    已選 {selectedIndicators.length} 項
+                  </p> */}
                 </div>
               </div>
               <button
@@ -138,13 +335,53 @@ export default function RankingModal({
               </div>
             </div>
 
+            {/* 路線篩選器 */}
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Train className="w-4 h-4 text-[#003d82]" />
+                <h3 className="text-sm font-bold text-gray-700">篩選路線</h3>
+                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                  {filteredData.length} 站
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setSelectedLineFilter("all")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    selectedLineFilter === "all"
+                      ? "bg-[#003d82] text-white shadow-md"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  所有路線
+                </button>
+                {LINES.filter((line) => line.id !== "Y").map((line) => (
+                  <button
+                    key={line.id}
+                    onClick={() => setSelectedLineFilter(line.id)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      selectedLineFilter === line.id
+                        ? "text-white shadow-md"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                    style={{
+                      backgroundColor:
+                        selectedLineFilter === line.id ? line.color : undefined,
+                    }}
+                  >
+                    {line.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* 翻頁按鈕 */}
             <div className="flex items-center justify-between mb-4">
               <button
-                onClick={onPrevPage}
-                disabled={currentPage === 0}
+                onClick={handlePrevPage}
+                disabled={internalPage === 0}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  currentPage === 0
+                  internalPage === 0
                     ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                     : "bg-[#003d82] text-white hover:bg-[#002d5f]"
                 }`}
@@ -154,16 +391,19 @@ export default function RankingModal({
               </button>
 
               <span className="text-sm text-gray-600">
-                顯示 {currentPage * itemsPerPage + 1} -{" "}
-                {Math.min((currentPage + 1) * itemsPerPage, rankingData.length)}{" "}
-                / 共 {rankingData.length} 站
+                顯示 {internalPage * itemsPerPage + 1} -{" "}
+                {Math.min(
+                  (internalPage + 1) * itemsPerPage,
+                  filteredData.length
+                )}{" "}
+                / 共 {filteredData.length} 站
               </span>
 
               <button
-                onClick={onNextPage}
-                disabled={currentPage >= totalPages - 1}
+                onClick={handleNextPage}
+                disabled={internalPage >= filteredTotalPages - 1}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  currentPage >= totalPages - 1
+                  internalPage >= filteredTotalPages - 1
                     ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                     : "bg-[#003d82] text-white hover:bg-[#002d5f]"
                 }`}
@@ -173,45 +413,104 @@ export default function RankingModal({
               </button>
             </div>
 
-            {/* 長條圖 */}
-            <div className="w-full h-[400px] md:h-[600px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={currentPageData}
-                  margin={{ top: 20, right: 10, left: 10, bottom: 80 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis
-                    dataKey="name"
-                    angle={-45}
-                    textAnchor="end"
-                    height={100}
-                    interval={0}
-                    tick={{ fontSize: 10 }}
-                  />
-                  <YAxis
-                    label={{
-                      value: "綜合分數",
-                      angle: -90,
-                      position: "insideLeft",
-                      style: { fontSize: 12 },
-                    }}
-                    domain={[0, 100]}
-                    tick={{ fontSize: 10 }}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar
-                    dataKey="score"
-                    radius={[8, 8, 0, 0]}
-                    onClick={onBarClick}
-                    cursor="pointer"
-                  >
-                    {currentPageData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+            {/* 🔥 合併圖表：長條圖 + 折線圖 */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-bold text-gray-700">
+                  綜合分數排名 vs 平均房價
+                </h3>
+                {priceCount > 0 && (
+                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                    {priceCount} 站有房價資料
+                  </span>
+                )}
+              </div>
+              <div className="w-full h-[500px] md:h-[600px]">
+                {filteredData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart
+                      data={chartData}
+                      margin={{ top: 20, right: 30, left: 10, bottom: 80 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis
+                        dataKey="name"
+                        angle={-45}
+                        textAnchor="end"
+                        height={100}
+                        interval={0}
+                        tick={{ fontSize: 10 }}
+                      />
+                      {/* 左側 Y 軸：分數 */}
+                      <YAxis
+                        yAxisId="left"
+                        label={{
+                          value: "綜合分數",
+                          angle: -90,
+                          position: "insideLeft",
+                          style: { fontSize: 12, fill: "#003d82" },
+                        }}
+                        domain={[0, 100]}
+                        tick={{ fontSize: 10, fill: "#003d82" }}
+                      />
+                      {/* 🔥 右側 Y 軸：房價 (黑色) */}
+                      <YAxis
+                        yAxisId="right"
+                        orientation="right"
+                        label={{
+                          value: "房價 (萬/坪)",
+                          angle: 90,
+                          position: "insideRight",
+                          style: { fontSize: 12, fill: "#000000" },
+                        }}
+                        tick={{ fontSize: 10, fill: "#000000" }}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      {/* <Legend
+                        wrapperStyle={{ paddingTop: "20px" }}
+                        iconType="circle"
+                      /> */}
+                      {/* 長條圖：分數 */}
+                      <Bar
+                        yAxisId="left"
+                        dataKey="score"
+                        name="綜合分數"
+                        onClick={onBarClick}
+                        cursor="pointer"
+                        shape={<CustomBar />}
+                      >
+                        {chartData.map((entry, index) => {
+                          const colors = getDisplayColors(
+                            entry,
+                            selectedLineFilter
+                          );
+                          const fillValue =
+                            colors.length > 1 ? colors : colors[0];
+                          return (
+                            <Cell key={`cell-${index}`} fill={fillValue} />
+                          );
+                        })}
+                      </Bar>
+                      {/* 🔥 折線圖：房價 (黑色) */}
+                      <Line
+                        yAxisId="right"
+                        type="monotone"
+                        dataKey="priceValue"
+                        name="平均房價"
+                        stroke="#00000090"
+                        strokeWidth={3}
+                        dot={{ fill: "#000000", r: 5 }}
+                        activeDot={{ r: 7 }}
+                        connectNulls={false}
+                      />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-gray-500">此路線沒有站點資料</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

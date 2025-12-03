@@ -338,22 +338,47 @@ export default function MrtMap() {
   };
 
   const ITEMS_PER_PAGE = 20;
+  // 🔥 只需要修改 allRankingData 這個 useMemo
+  // 在你的 MrtMap.tsx 第 378-397 行，替換成以下程式碼：
+
+  // 🔥 在 MrtMap.tsx 中，修改 allRankingData（約第 378-397 行）
+  // 替換成以下程式碼：
+
   const allRankingData = useMemo(() => {
     return rankedStations
       .map((item) => {
-        const colors = getLineColors(item.station);
+        const station = item.station;
+
+        // 🔥 正確取得站點的所有路線顏色
+        let colors: string[] = [];
+
+        if (station.lines && station.lines.length > 0) {
+          // 轉乘站：根據 lines 屬性取得所有路線顏色
+          colors = station.lines
+            .map((lineId) => {
+              const line = LINES.find((l) => l.id === lineId);
+              return line?.color;
+            })
+            .filter((c): c is string => c !== undefined);
+        } else {
+          // 非轉乘站：使用 getLineColor 取得單一顏色
+          colors = [getLineColor(station.id)];
+        }
+
         return {
-          name: item.station.name,
+          name: station.name,
           score: Number((item.score * 100).toFixed(1)),
           rank: item.rank,
-          stationId: item.station.id,
+          stationId: station.id,
           color: colors[0] || "#999",
+          colors: colors, // 🔥 傳入所有顏色
           price: (() => {
-            const stationName = item.station.name.replace("站", "");
+            const stationName = station.name.replace("站", "");
             const details =
               TOD_DETAILS[stationName]?.[selectedYear]?.[selectedBuffer];
             return details?.price ? (details.price / 10000).toFixed(0) : null;
           })(),
+          lines: station.lines, // 🔥 傳入路線資訊
         };
       })
       .filter((item) => !isNaN(item.score));
