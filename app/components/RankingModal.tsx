@@ -210,115 +210,108 @@ const CustomBar: React.FC<CustomBarProps> = (props) => {
     return null;
   }
 
-  if (Array.isArray(fill)) {
-    const colors = fill.filter((c) => c).map((c) => addOpacityToColor(c, 0.75));
+  // 🔥 處理逗號分隔的顏色字串
+  let colors: string[];
+  if (typeof fill === "string" && fill.includes(",")) {
+    colors = fill.split(",");
+  } else if (typeof fill === "string") {
+    colors = [fill];
+  } else if (Array.isArray(fill)) {
+    colors = fill;
+  } else {
+    return null;
+  }
 
-    if (colors.length === 0) {
-      return null;
-    }
+  const filteredColors = colors
+    .filter((c) => c)
+    .map((c) => addOpacityToColor(c, 0.75));
 
-    const radius = 8;
+  if (filteredColors.length === 0) {
+    return null;
+  }
 
-    if (colors.length === 2) {
-      const halfWidth = width / 2;
-      return (
-        <g>
-          <path
-            d={`
-              M ${x} ${y + height}
-              L ${x} ${y + radius}
-              Q ${x} ${y} ${x + radius} ${y}
-              L ${x + halfWidth} ${y}
-              L ${x + halfWidth} ${y + height}
-              Z
-            `}
-            fill={colors[0]}
-          />
-          <path
-            d={`
-              M ${x + halfWidth} ${y}
-              L ${x + width - radius} ${y}
-              Q ${x + width} ${y} ${x + width} ${y + radius}
-              L ${x + width} ${y + height}
-              L ${x + halfWidth} ${y + height}
-              Z
-            `}
-            fill={colors[1]}
-          />
-        </g>
-      );
-    } else if (colors.length === 3) {
-      const thirdWidth = width / 3;
-      return (
-        <g>
-          <path
-            d={`
-              M ${x} ${y + height}
-              L ${x} ${y + radius}
-              Q ${x} ${y} ${x + radius} ${y}
-              L ${x + thirdWidth} ${y}
-              L ${x + thirdWidth} ${y + height}
-              Z
-            `}
-            fill={colors[0]}
-          />
-          <rect
-            x={x + thirdWidth}
-            y={y}
-            width={thirdWidth}
-            height={height}
-            fill={colors[1]}
-          />
-          <path
-            d={`
-              M ${x + thirdWidth * 2} ${y}
-              L ${x + width - radius} ${y}
-              Q ${x + width} ${y} ${x + width} ${y + radius}
-              L ${x + width} ${y + height}
-              L ${x + thirdWidth * 2} ${y + height}
-              Z
-            `}
-            fill={colors[2]}
-          />
-        </g>
-      );
-    } else {
-      const fillWithOpacity = addOpacityToColor(colors[0], 0.75);
-      const radius = 8;
-      return (
+  const radius = 8;
+
+  if (filteredColors.length === 2) {
+    const halfWidth = width / 2;
+    return (
+      <g>
         <path
           d={`
             M ${x} ${y + height}
             L ${x} ${y + radius}
             Q ${x} ${y} ${x + radius} ${y}
+            L ${x + halfWidth} ${y}
+            L ${x + halfWidth} ${y + height}
+            Z
+          `}
+          fill={filteredColors[0]}
+        />
+        <path
+          d={`
+            M ${x + halfWidth} ${y}
             L ${x + width - radius} ${y}
             Q ${x + width} ${y} ${x + width} ${y + radius}
             L ${x + width} ${y + height}
+            L ${x + halfWidth} ${y + height}
             Z
           `}
-          fill={fillWithOpacity}
+          fill={filteredColors[1]}
         />
-      );
-    }
+      </g>
+    );
+  } else if (filteredColors.length === 3) {
+    const thirdWidth = width / 3;
+    return (
+      <g>
+        <path
+          d={`
+            M ${x} ${y + height}
+            L ${x} ${y + radius}
+            Q ${x} ${y} ${x + radius} ${y}
+            L ${x + thirdWidth} ${y}
+            L ${x + thirdWidth} ${y + height}
+            Z
+          `}
+          fill={filteredColors[0]}
+        />
+        <rect
+          x={x + thirdWidth}
+          y={y}
+          width={thirdWidth}
+          height={height}
+          fill={filteredColors[1]}
+        />
+        <path
+          d={`
+            M ${x + thirdWidth * 2} ${y}
+            L ${x + width - radius} ${y}
+            Q ${x + width} ${y} ${x + width} ${y + radius}
+            L ${x + width} ${y + height}
+            L ${x + thirdWidth * 2} ${y + height}
+            Z
+          `}
+          fill={filteredColors[2]}
+        />
+      </g>
+    );
+  } else {
+    const fillWithOpacity = addOpacityToColor(filteredColors[0], 0.75);
+    return (
+      <path
+        d={`
+          M ${x} ${y + height}
+          L ${x} ${y + radius}
+          Q ${x} ${y} ${x + radius} ${y}
+          L ${x + width - radius} ${y}
+          Q ${x + width} ${y} ${x + width} ${y + radius}
+          L ${x + width} ${y + height}
+          Z
+        `}
+        fill={fillWithOpacity}
+      />
+    );
   }
-
-  const radius = 8;
-  const fillWithOpacity = addOpacityToColor(fill as string, 0.75);
-
-  return (
-    <path
-      d={`
-        M ${x} ${y + height}
-        L ${x} ${y + radius}
-        Q ${x} ${y} ${x + radius} ${y}
-        L ${x + width - radius} ${y}
-        Q ${x + width} ${y} ${x + width} ${y + radius}
-        L ${x + width} ${y + height}
-        Z
-      `}
-      fill={fillWithOpacity}
-    />
-  );
 };
 
 export default function RankingModal({
@@ -794,8 +787,9 @@ export default function RankingModal({
                             entry,
                             selectedLineFilter
                           );
+                          // 🔥 將顏色陣列轉為逗號分隔字串
                           const fillValue =
-                            colors.length > 1 ? colors : colors[0];
+                            colors.length > 1 ? colors.join(",") : colors[0];
 
                           const isSelected = selectedStations.includes(
                             entry.stationId
