@@ -911,7 +911,7 @@ export default function MrtMap() {
                     {displayMode === "tod" ? "T" : "$"}
                   </div>
                   <span className="truncate">
-                    {displayMode === "tod" ? "TOD 指數" : "房價"}
+                    {displayMode === "tod" ? "TOD 指數" : "房價(萬/坪)"}
                   </span>
                 </div>
               </div>
