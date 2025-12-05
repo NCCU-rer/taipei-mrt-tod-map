@@ -456,7 +456,7 @@ export default function MrtMap() {
     setShowComparisonModal(true);
   };
 
-  const comparisonData = useMemo<ComparisonStation[]>(() => {
+  const comparisonData = useMemo(() => {
     return comparisonStations
       .map((stationId) => {
         const station = STATIONS.find((s) => s.id === stationId);
