@@ -456,26 +456,27 @@ export default function MrtMap() {
     setShowComparisonModal(true);
   };
 
+  // 🔥 使用 flatMap 處理 comparisonData（推薦方式）
   const comparisonData = useMemo(() => {
-    return comparisonStations
-      .map((stationId) => {
-        const station = STATIONS.find((s) => s.id === stationId);
-        if (!station) return null;
+    return comparisonStations.flatMap((stationId) => {
+      const station = STATIONS.find((s) => s.id === stationId);
+      if (!station) return [];
 
-        const stationName = station.name.replace("站", "");
-        const details =
-          TOD_DETAILS[stationName]?.[selectedYear]?.[selectedBuffer];
+      const stationName = station.name.replace("站", "");
+      const details =
+        TOD_DETAILS[stationName]?.[selectedYear]?.[selectedBuffer];
 
-        const stationColors = getLineColors(station);
-        const color = stationColors[0] || getLineColor(station.id);
+      const stationColors = getLineColors(station);
+      const color = stationColors[0] || getLineColor(station.id);
 
-        return {
+      return [
+        {
           station,
-          details,
+          details: details || null,
           color,
-        };
-      })
-      .filter((item): item is ComparisonStation => item !== null);
+        },
+      ];
+    });
   }, [comparisonStations, selectedYear, selectedBuffer]);
 
   const handleLegendClick = (lineId: string) => {
