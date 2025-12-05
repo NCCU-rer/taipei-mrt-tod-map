@@ -43,14 +43,35 @@ const getRadarIcon = (subject: string) => {
 
 // 🔥 修正型別定義
 interface StationDetails {
-  score?: number;
-  count?: number | null;
-  price?: number | null;
-  radar?: Array<{
+  score: number; // TOD整體分數
+  count: number | null;
+  price: number | null;
+  radar: Array<{
     subject: string;
-    value: number;
+    value: number; // 標準化數值 (0-1)
   }>;
-  raw?: Record<string, any>;
+  raw: {
+    // 原始數據
+    步行友善度: number;
+    自行車便利度: number;
+    街道連通度: number;
+    大眾運輸可達度: number;
+    生活機能多樣性: number;
+    都市密度強度: number;
+    區域整合度: number;
+    低汽車依賴度: number;
+  };
+  normalized: {
+    // 標準化數據 (0-1)
+    步行友善度: number;
+    自行車便利度: number;
+    街道連通度: number;
+    大眾運輸可達度: number;
+    生活機能多樣性: number;
+    都市密度強度: number;
+    區域整合度: number;
+    低汽車依賴度: number;
+  };
 }
 
 interface StationInfo extends StationData {
@@ -104,8 +125,7 @@ const MULTI_LINE_STATIONS: Record<string, string> = {
   // 民權西路：紅R13 / 橘O11 → 選橘線
   民權西路: "O11",
 
-  // 大安：紅R05 / 棕BR09 → 選棕線（因為紅線優先於棕線，但這裡棕線編號較小）
-  // 實際上應該選紅線，但根據你的優先順序藍>綠>橘>紅>棕，所以選紅線
+  // 大安：紅R05 / 棕BR09 → 選紅線
   大安: "R05",
 };
 
@@ -199,7 +219,7 @@ export default function InfoPanel({
                   <span className="text-sm text-gray-600">TOD 指數</span>
                 </div>
                 <div className="text-2xl font-bold text-[#003d82]">
-                  {stationDetails.score?.toFixed(1) ?? "N/A"}
+                  {stationDetails.score.toFixed(1)}
                 </div>
               </div>
             </div>
@@ -217,7 +237,7 @@ export default function InfoPanel({
                       #{stationInfo.rank}
                     </div>
                     <div className="text-xs text-gray-500">
-                      分數: {(stationInfo.customScore * 100).toFixed(1)}
+                      分數: {stationInfo.customScore.toFixed(1)}
                     </div>
                   </div>
                 </div>
@@ -268,9 +288,12 @@ export default function InfoPanel({
                 各項指標表現
               </h4>
 
-              {/* 雷達圖 */}
-              <div className="w-full h-[240px] -ml-2 mb-4">
-                <ResponsiveContainer width="100%" height="100%">
+              {/* 🔥 雷達圖 - 使用標準化數據 */}
+              <div
+                className="w-full mb-4"
+                style={{ height: "240px", minHeight: "240px" }}
+              >
+                <ResponsiveContainer width="100%" height="100%" minHeight={240}>
                   <RadarChart
                     cx="50%"
                     cy="50%"
@@ -302,7 +325,7 @@ export default function InfoPanel({
                 </ResponsiveContainer>
               </div>
 
-              {/* 指標列表 */}
+              {/* 🔥 指標列表 - 使用標準化數據顯示百分比 */}
               <div className="space-y-2">
                 {stationDetails.radar
                   .filter((item: any) => !isNaN(item.value))

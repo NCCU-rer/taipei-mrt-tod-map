@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   ComposedChart,
   Bar,
@@ -22,9 +22,9 @@ interface RankingData {
   rank: number;
   stationId: string;
   color: string;
-  colors?: string[]; // 支援多色（轉乘站）
+  colors?: string[];
   price: string | null;
-  lines?: string[]; // 站點所屬的多條路線
+  lines?: string[];
 }
 
 interface RankingModalProps {
@@ -41,6 +41,16 @@ interface RankingModalProps {
   onBarClick: (data: any) => void;
 }
 
+interface CustomBarProps {
+  fill: string | string[];
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  payload?: any;
+  [key: string]: any;
+}
+
 // 🔥 自訂 Tooltip - 同時顯示分數和房價
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
@@ -55,7 +65,9 @@ const CustomTooltip = ({ active, payload }: any) => {
           </div>
           <div className="flex items-center justify-between gap-4">
             <span className="text-gray-600">綜合分數：</span>
-            <span className="font-bold text-[#003d82]">{data.score} 分</span>
+            <span className="font-bold text-[#003d82]">
+              {data.score.toFixed(1)}
+            </span>
           </div>
           {data.priceValue && (
             <div className="flex items-center justify-between gap-4">
@@ -132,12 +144,37 @@ const getDisplayColors = (
   return [getDisplayColor(station, selectedLineFilter)];
 };
 
-// 🔥 自訂長條圖形狀 - 支援分半顏色
-const CustomBar = (props: any) => {
+// 🎨 將顏色轉換為帶透明度的版本
+const addOpacityToColor = (color: string, opacity: number = 0.75): string => {
+  if (!color || typeof color !== "string") {
+    return `rgba(128, 128, 128, ${opacity})`;
+  }
+
+  if (color.startsWith("#")) {
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+
+  return color;
+};
+
+// 🔥 自訂長條圖形狀 - 支援分半顏色 + 透明度
+const CustomBar = (props: CustomBarProps) => {
   const { fill, x, y, width, height } = props;
 
+  if (!fill) {
+    return null;
+  }
+
   if (Array.isArray(fill)) {
-    const colors = fill;
+    const colors = fill.filter((c) => c).map((c) => addOpacityToColor(c, 0.75));
+
+    if (colors.length === 0) {
+      return null;
+    }
+
     const radius = 8;
 
     if (colors.length === 2) {
@@ -203,10 +240,29 @@ const CustomBar = (props: any) => {
           />
         </g>
       );
+    } else {
+      const fillWithOpacity = addOpacityToColor(colors[0], 0.75);
+      const radius = 8;
+      return (
+        <path
+          d={`
+            M ${x} ${y + height}
+            L ${x} ${y + radius}
+            Q ${x} ${y} ${x + radius} ${y}
+            L ${x + width - radius} ${y}
+            Q ${x + width} ${y} ${x + width} ${y + radius}
+            L ${x + width} ${y + height}
+            Z
+          `}
+          fill={fillWithOpacity}
+        />
+      );
     }
   }
 
   const radius = 8;
+  const fillWithOpacity = addOpacityToColor(fill as string, 0.75);
+
   return (
     <path
       d={`
@@ -218,7 +274,7 @@ const CustomBar = (props: any) => {
         L ${x + width} ${y + height}
         Z
       `}
-      fill={fill}
+      fill={fillWithOpacity}
     />
   );
 };
@@ -239,6 +295,23 @@ export default function RankingModal({
   const [selectedLineFilter, setSelectedLineFilter] = useState<string>("all");
   const [internalPage, setInternalPage] = useState(0);
 
+  // 🔥 檢測是否為手機版
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // 🔥 根據設備類型決定每頁顯示數量
+  const effectiveItemsPerPage = isMobile ? 8 : itemsPerPage;
+
   // 根據路線篩選資料
   const filteredData =
     selectedLineFilter === "all"
@@ -247,12 +320,14 @@ export default function RankingModal({
           stationBelongsToLine(item, selectedLineFilter)
         );
 
-  // 重新計算分頁
-  const filteredTotalPages = Math.ceil(filteredData.length / itemsPerPage);
+  // 🔥 重新計算分頁（使用動態 itemsPerPage）
+  const filteredTotalPages = Math.ceil(
+    filteredData.length / effectiveItemsPerPage
+  );
 
   const currentPageData = filteredData.slice(
-    internalPage * itemsPerPage,
-    (internalPage + 1) * itemsPerPage
+    internalPage * effectiveItemsPerPage,
+    (internalPage + 1) * effectiveItemsPerPage
   );
 
   // 🔥 準備合併圖表資料
@@ -261,15 +336,39 @@ export default function RankingModal({
     priceValue: item.price ? parseFloat(item.price) : null,
   }));
 
+  // 🔥 動態計算 Y 軸範圍（分數）
+  const scoreRange = useMemo(() => {
+    if (chartData.length === 0) return { min: 0, max: 100 };
+
+    const scores = chartData.map((item) => item.score);
+    const minScore = Math.min(...scores);
+    const maxScore = Math.max(...scores);
+
+    const padding = (maxScore - minScore) * 0.1;
+
+    return {
+      min: Math.max(0, Math.floor(minScore - padding)),
+      max: Math.ceil(maxScore + padding),
+    };
+  }, [chartData]);
+
   // 計算有房價資料的站點數量
   const priceCount = chartData.filter(
     (item) => item.priceValue !== null
   ).length;
 
-  // 路線切換時重置頁碼
+  // 🔥 路線切換時重置頁碼
   useEffect(() => {
     setInternalPage(0);
   }, [selectedLineFilter]);
+
+  // 🔥 每次打開視窗時重置到第一頁
+  useEffect(() => {
+    if (isOpen) {
+      setInternalPage(0);
+      setSelectedLineFilter("all");
+    }
+  }, [isOpen]);
 
   const handlePrevPage = () => {
     if (internalPage > 0) {
@@ -305,6 +404,12 @@ export default function RankingModal({
                   <h2 className="text-lg md:text-xl font-bold text-white">
                     站點排名 (第 {internalPage + 1} / {filteredTotalPages} 頁)
                   </h2>
+                  {/* 🔥 手機版提示 */}
+                  {isMobile && (
+                    <p className="text-xs text-blue-200 mt-1">
+                      手機版每頁顯示 {effectiveItemsPerPage} 站
+                    </p>
+                  )}
                 </div>
               </div>
               <button
@@ -377,20 +482,20 @@ export default function RankingModal({
               <button
                 onClick={handlePrevPage}
                 disabled={internalPage === 0}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   internalPage === 0
                     ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                     : "bg-[#003d82] text-white hover:bg-[#002d5f]"
                 }`}
               >
                 <ChevronLeft className="w-4 h-4" />
-                上一頁
+                <span className="hidden sm:inline">上一頁</span>
               </button>
 
-              <span className="text-sm text-gray-600">
-                顯示 {internalPage * itemsPerPage + 1} -{" "}
+              <span className="text-xs md:text-sm text-gray-600">
+                顯示 {internalPage * effectiveItemsPerPage + 1} -{" "}
                 {Math.min(
-                  (internalPage + 1) * itemsPerPage,
+                  (internalPage + 1) * effectiveItemsPerPage,
                   filteredData.length
                 )}{" "}
                 / 共 {filteredData.length} 站
@@ -399,13 +504,13 @@ export default function RankingModal({
               <button
                 onClick={handleNextPage}
                 disabled={internalPage >= filteredTotalPages - 1}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   internalPage >= filteredTotalPages - 1
                     ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                     : "bg-[#003d82] text-white hover:bg-[#002d5f]"
                 }`}
               >
-                下一頁
+                <span className="hidden sm:inline">下一頁</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -422,35 +527,50 @@ export default function RankingModal({
                   </span>
                 )}
               </div>
-              <div className="w-full h-[500px] md:h-[600px]">
+              <div className="w-full h-[400px] md:h-[600px]">
                 {filteredData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart
                       data={chartData}
-                      margin={{ top: 20, right: 30, left: 10, bottom: 80 }}
+                      margin={{
+                        top: 20,
+                        right: isMobile ? 20 : 40,
+                        left: isMobile ? 10 : 20,
+                        bottom: isMobile ? 60 : 80,
+                      }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                       <XAxis
                         dataKey="name"
                         angle={-45}
                         textAnchor="end"
-                        height={100}
+                        height={isMobile ? 80 : 100}
                         interval={0}
-                        tick={{ fontSize: 10 }}
+                        tick={{ fontSize: isMobile ? 9 : 10, fill: "#4b5563" }}
                       />
-                      {/* 左側 Y 軸：分數 */}
+                      {/* 🔥 左側 Y 軸：分數（動態範圍） */}
                       <YAxis
                         yAxisId="left"
                         label={{
                           value: "綜合分數",
                           angle: -90,
                           position: "insideLeft",
-                          style: { fontSize: 12, fill: "#003d82" },
+                          style: {
+                            fontSize: isMobile ? 11 : 13,
+                            fill: "#003d82",
+                            fontWeight: "600",
+                          },
                         }}
-                        domain={[0, 100]}
-                        tick={{ fontSize: 10, fill: "#003d82" }}
+                        domain={[scoreRange.min, scoreRange.max]}
+                        tick={{
+                          fontSize: isMobile ? 9 : 11,
+                          fill: "#003d82",
+                          fontWeight: "500",
+                        }}
+                        axisLine={{ stroke: "#003d82", strokeWidth: 2 }}
+                        tickLine={{ stroke: "#003d82" }}
                       />
-                      {/* 🔥 右側 Y 軸：房價 (黑色) */}
+                      {/* 🎨 右側 Y 軸：房價（黑色系） */}
                       <YAxis
                         yAxisId="right"
                         orientation="right"
@@ -458,12 +578,22 @@ export default function RankingModal({
                           value: "房價 (萬/坪)",
                           angle: 90,
                           position: "insideRight",
-                          style: { fontSize: 12, fill: "#000000" },
+                          style: {
+                            fontSize: isMobile ? 11 : 13,
+                            fill: "#1f2937",
+                            fontWeight: "600",
+                          },
                         }}
-                        tick={{ fontSize: 10, fill: "#000000" }}
+                        tick={{
+                          fontSize: isMobile ? 9 : 11,
+                          fill: "#1f2937",
+                          fontWeight: "500",
+                        }}
+                        axisLine={{ stroke: "#1f2937", strokeWidth: 2 }}
+                        tickLine={{ stroke: "#1f2937" }}
                       />
                       <Tooltip content={<CustomTooltip />} />
-                      {/* 長條圖：分數 */}
+                      {/* 🎨 長條圖：分數（帶透明度） */}
                       <Bar
                         yAxisId="left"
                         dataKey="score"
@@ -477,27 +607,28 @@ export default function RankingModal({
                             entry,
                             selectedLineFilter
                           );
-                          // 🔥 修正：確保 fillValue 是 string 或 string[]
-                          const fillValue: string | string[] =
+                          const fillValue =
                             colors.length > 1 ? colors : colors[0];
                           return (
-                            <Cell
-                              key={`cell-${index}`}
-                              fill={fillValue as any}
-                            />
+                            <Cell key={`cell-${index}`} fill={fillValue} />
                           );
                         })}
                       </Bar>
-                      {/* 🔥 折線圖：房價 (黑色半透明) */}
+                      {/* 🎨 折線圖：房價（黑色加粗） */}
                       <Line
                         yAxisId="right"
                         type="monotone"
                         dataKey="priceValue"
                         name="平均房價"
-                        stroke="#00000090"
-                        strokeWidth={3}
-                        dot={{ fill: "#000000", r: 5 }}
-                        activeDot={{ r: 7 }}
+                        stroke="#1f2937"
+                        strokeWidth={isMobile ? 2 : 3}
+                        dot={{
+                          fill: "#1f2937",
+                          r: isMobile ? 3 : 5,
+                          strokeWidth: 2,
+                          stroke: "#fff",
+                        }}
+                        activeDot={{ r: isMobile ? 5 : 7, strokeWidth: 2 }}
                         connectNulls={false}
                       />
                     </ComposedChart>

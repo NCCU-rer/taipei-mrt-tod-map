@@ -47,10 +47,21 @@ const StationNode: React.FC<StationNodeProps> = ({
   const [isHovered, setIsHovered] = useState(false);
 
   const radius = 18;
+
+  // 🎨 圓圈底色：統一使用白色
   const fill = hasData ? "#ffffff" : "#d1d5db";
+
   const strokeWidth = isSelected ? 3 : 2.5;
-  const valueColor = hasData ? "#1a1a1a" : "#6b7280";
-  const valueFontSize = hasData ? 11 : 13;
+
+  // 🎨 根據顯示模式決定數字顏色
+  const valueColor = hasData
+    ? displayMode === "tod"
+      ? "#003d82"
+      : "#c8102e" // TOD 藍色，房價紅色
+    : "#6b7280"; // 無資料灰色
+
+  // 🎨 數字大小：14
+  const valueFontSize = hasData ? 14 : 13;
 
   const stationColors = getLineColors(station);
   const displayColors =
@@ -73,7 +84,6 @@ const StationNode: React.FC<StationNodeProps> = ({
       case "top":
         return { x: 0, y: -verticalOffset };
       case "bottom":
-        // return { x: 0, y: verticalOffset };
         return { x: 0, y: 35 };
       case "left":
         return { x: -horizontalOffset, y: 0 };
@@ -126,6 +136,7 @@ const StationNode: React.FC<StationNodeProps> = ({
 
       <circle r={28} fill="transparent" />
 
+      {/* 🎨 圓圈：白色底 + 路線顏色邊框 */}
       <circle
         r={radius}
         fill={fill}
@@ -141,23 +152,7 @@ const StationNode: React.FC<StationNodeProps> = ({
         }}
       />
 
-      <text
-        dy=".35em"
-        fill="#ffffff"
-        fontSize={valueFontSize + 1}
-        fontWeight="900"
-        textAnchor="middle"
-        stroke="#ffffff"
-        strokeWidth="3"
-        style={{
-          pointerEvents: "none",
-          userSelect: "none",
-          opacity: 0.8,
-        }}
-      >
-        {displayValue}
-      </text>
-
+      {/* 🎨 數字（根據模式改變顏色，無白色描邊） */}
       <text
         dy=".35em"
         fill={valueColor}
@@ -167,7 +162,6 @@ const StationNode: React.FC<StationNodeProps> = ({
         style={{
           pointerEvents: "none",
           userSelect: "none",
-          filter: "drop-shadow(0px 1px 1px rgba(255,255,255,0.8))",
         }}
       >
         {displayValue}
@@ -223,8 +217,9 @@ const StationNode: React.FC<StationNodeProps> = ({
 
 // --- 主元件 ---
 export default function MrtMap() {
+  // 🔥 預設選擇台北車站 (R10)
   const [selectedStationId, setSelectedStationId] = useState<string | null>(
-    null
+    "R10"
   );
   const [selectedYear, setSelectedYear] = useState<string>("112");
   const [selectedBuffer, setSelectedBuffer] = useState<string>("300");
@@ -264,20 +259,32 @@ export default function MrtMap() {
     const details = TOD_DETAILS[stationName]?.[selectedYear]?.[selectedBuffer];
     if (!details || !details.raw) return 0;
 
-    const selectedValues = selectedIndicators
-      .map((id) => {
-        const indicator = INDICATORS.find((i) => i.id === id);
-        if (!indicator) return null;
-        const value = details.raw[indicator.key as keyof typeof details.raw];
-        return typeof value === "number" && !isNaN(value) ? value : null;
-      })
-      .filter((v): v is number => v !== null);
+    // 🔥 判斷是否全選（8個指標都選）
+    const isAllSelected = selectedIndicators.length === INDICATORS.length;
 
-    if (selectedValues.length === 0) return 0;
-    const sum = selectedValues.reduce((acc, val) => acc + val, 0);
-    return sum / selectedValues.length;
+    if (isAllSelected) {
+      // ✅ 全選時：直接使用 TOD 整體分數
+      return details.score;
+    } else {
+      // ✅ 部分選擇時：使用原始數據相加
+      const selectedValues = selectedIndicators
+        .map((id) => {
+          const indicator = INDICATORS.find((i) => i.id === id);
+          if (!indicator) return null;
+
+          // 🔥 使用原始數據（raw）
+          const value = details.raw[indicator.key as keyof typeof details.raw];
+          return typeof value === "number" && !isNaN(value) ? value : null;
+        })
+        .filter((v): v is number => v !== null);
+
+      if (selectedValues.length === 0) return 0;
+
+      // 🔥 直接相加（不取平均，不乘以 100）
+      const sum = selectedValues.reduce((acc, val) => acc + val, 0);
+      return sum;
+    }
   };
-
   const rankedStations = useMemo(() => {
     const stationsWithScores = STATIONS.map((station) => {
       const stationName = station.name.replace("站", "");
@@ -339,22 +346,15 @@ export default function MrtMap() {
   };
 
   const ITEMS_PER_PAGE = 20;
-  // 🔥 只需要修改 allRankingData 這個 useMemo
-  // 在你的 MrtMap.tsx 第 378-397 行，替換成以下程式碼：
-
-  // 🔥 在 MrtMap.tsx 中，修改 allRankingData（約第 378-397 行）
-  // 替換成以下程式碼：
 
   const allRankingData = useMemo(() => {
     return rankedStations
       .map((item) => {
         const station = item.station;
 
-        // 🔥 正確取得站點的所有路線顏色
         let colors: string[] = [];
 
         if (station.lines && station.lines.length > 0) {
-          // 轉乘站：根據 lines 屬性取得所有路線顏色
           colors = station.lines
             .map((lineId) => {
               const line = LINES.find((l) => l.id === lineId);
@@ -362,24 +362,23 @@ export default function MrtMap() {
             })
             .filter((c): c is string => c !== undefined);
         } else {
-          // 非轉乘站：使用 getLineColor 取得單一顏色
           colors = [getLineColor(station.id)];
         }
 
         return {
           name: station.name,
-          score: Number((item.score * 100).toFixed(1)),
+          score: Number(item.score.toFixed(1)), // 🔥 直接使用分數，不乘以100
           rank: item.rank,
           stationId: station.id,
           color: colors[0] || "#999",
-          colors: colors, // 🔥 傳入所有顏色
+          colors: colors,
           price: (() => {
             const stationName = station.name.replace("站", "");
             const details =
               TOD_DETAILS[stationName]?.[selectedYear]?.[selectedBuffer];
             return details?.price ? (details.price / 10000).toFixed(0) : null;
           })(),
-          lines: station.lines, // 🔥 傳入路線資訊
+          lines: station.lines,
         };
       })
       .filter((item) => !isNaN(item.score));
@@ -707,7 +706,6 @@ export default function MrtMap() {
                 }}
               ></path>
               <path
-                // d="m 89.7109 943.2889 l 280 -280 c 15 -15 25 -15 55 -15 h 800"
                 d="m 276 1058 v -25 -280 l 85 -90 c 15 -15 25 -15 55 -15 h 800"
                 stroke="#0072c6"
                 style={{
