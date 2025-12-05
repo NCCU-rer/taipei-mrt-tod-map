@@ -772,9 +772,20 @@ export default function RankingModal({
                         yAxisId="left"
                         dataKey="score"
                         name="綜合分數"
-                        onClick={(data: ChartDataItem) =>
-                          handleStationSelect(data.stationId)
-                        }
+                        onClick={(data: unknown) => {
+                          // 🔥 從 recharts 事件物件中安全提取 payload
+                          if (
+                            data &&
+                            typeof data === "object" &&
+                            "payload" in data
+                          ) {
+                            const payload = (data as { payload: ChartDataItem })
+                              .payload;
+                            if (payload?.stationId) {
+                              handleStationSelect(payload.stationId);
+                            }
+                          }
+                        }}
                         cursor="pointer"
                         shape={<CustomBar />}
                       >
