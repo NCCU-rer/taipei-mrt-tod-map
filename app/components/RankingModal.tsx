@@ -13,7 +13,16 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { X, Award, Info, ChevronLeft, ChevronRight, Train } from "lucide-react";
+import {
+  X,
+  Award,
+  Info,
+  ChevronLeft,
+  ChevronRight,
+  Train,
+  ArrowUpDown,
+  Check,
+} from "lucide-react";
 import { LINES } from "../data/lines";
 
 interface RankingData {
@@ -38,50 +47,77 @@ interface RankingModalProps {
   itemsPerPage: number;
   onPrevPage: () => void;
   onNextPage: () => void;
-  onBarClick: (data: any) => void;
+  onBarClick: (data: BarClickData) => void;
+  onCompareStations?: (stationIds: string[]) => void;
 }
 
+// 🔥 長條圖點擊資料類型
+interface BarClickData {
+  stationId: string;
+  [key: string]: unknown;
+}
+
+// 🔥 圖表資料類型
+interface ChartDataItem extends RankingData {
+  priceValue: number | null;
+}
+
+// 🔥 自訂長條圖 Props 類型
 interface CustomBarProps {
-  fill: string | string[];
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  payload?: any;
-  [key: string]: any;
+  fill?: string | string[];
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  payload?: ChartDataItem;
+  [key: string]: unknown;
+}
+
+// 🔥 Tooltip Payload 類型
+interface TooltipPayload {
+  payload: ChartDataItem;
+  dataKey?: string;
+  name?: string;
+  value?: number;
+  color?: string;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: TooltipPayload[];
 }
 
 // 🔥 自訂 Tooltip - 同時顯示分數和房價
-const CustomTooltip = ({ active, payload }: any) => {
-  if (active && payload && payload.length) {
-    const data = payload[0].payload;
-    return (
-      <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-lg">
-        <p className="font-bold text-gray-800 mb-2">{data.name}</p>
-        <div className="space-y-1 text-sm">
-          <div className="flex items-center justify-between gap-4">
-            <span className="text-gray-600">排名：</span>
-            <span className="font-bold text-[#c8102e]">#{data.rank}</span>
-          </div>
-          <div className="flex items-center justify-between gap-4">
-            <span className="text-gray-600">綜合分數：</span>
-            <span className="font-bold text-[#003d82]">
-              {data.score.toFixed(1)}
-            </span>
-          </div>
-          {data.priceValue && (
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-gray-600">平均單價：</span>
-              <span className="font-bold text-gray-900">
-                {data.price} 萬/坪
-              </span>
-            </div>
-          )}
-        </div>
-      </div>
-    );
+const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload }) => {
+  if (!active || !payload || payload.length === 0) {
+    return null;
   }
-  return null;
+
+  const data = payload[0].payload;
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-lg">
+      <p className="font-bold text-gray-800 mb-2">{data.name}</p>
+      <div className="space-y-1 text-sm">
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-gray-600">排名：</span>
+          <span className="font-bold text-[#c8102e]">#{data.rank}</span>
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-gray-600">綜合分數：</span>
+          <span className="font-bold text-[#003d82]">
+            {data.score.toFixed(1)}
+          </span>
+        </div>
+        {data.priceValue && (
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-gray-600">平均單價：</span>
+            <span className="font-bold text-gray-900">{data.price} 萬/坪</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 // 判斷站點是否屬於指定路線（支援轉乘站）
@@ -161,10 +197,16 @@ const addOpacityToColor = (color: string, opacity: number = 0.75): string => {
 };
 
 // 🔥 自訂長條圖形狀 - 支援分半顏色 + 透明度
-const CustomBar = (props: CustomBarProps) => {
+const CustomBar: React.FC<CustomBarProps> = (props) => {
   const { fill, x, y, width, height } = props;
 
-  if (!fill) {
+  if (
+    !fill ||
+    x === undefined ||
+    y === undefined ||
+    width === undefined ||
+    height === undefined
+  ) {
     return null;
   }
 
@@ -291,9 +333,14 @@ export default function RankingModal({
   onPrevPage,
   onNextPage,
   onBarClick,
+  onCompareStations,
 }: RankingModalProps) {
   const [selectedLineFilter, setSelectedLineFilter] = useState<string>("all");
   const [internalPage, setInternalPage] = useState(0);
+
+  // 🔥 比對模式狀態
+  const [comparisonMode, setComparisonMode] = useState(false);
+  const [selectedStations, setSelectedStations] = useState<string[]>([]);
 
   // 🔥 檢測是否為手機版
   const [isMobile, setIsMobile] = useState(false);
@@ -313,28 +360,39 @@ export default function RankingModal({
   const effectiveItemsPerPage = isMobile ? 8 : itemsPerPage;
 
   // 根據路線篩選資料
-  const filteredData =
-    selectedLineFilter === "all"
-      ? rankingData
-      : rankingData.filter((item) =>
-          stationBelongsToLine(item, selectedLineFilter)
-        );
+  const filteredData = useMemo<RankingData[]>(
+    () =>
+      selectedLineFilter === "all"
+        ? rankingData
+        : rankingData.filter((item) =>
+            stationBelongsToLine(item, selectedLineFilter)
+          ),
+    [rankingData, selectedLineFilter]
+  );
 
   // 🔥 重新計算分頁（使用動態 itemsPerPage）
   const filteredTotalPages = Math.ceil(
     filteredData.length / effectiveItemsPerPage
   );
 
-  const currentPageData = filteredData.slice(
-    internalPage * effectiveItemsPerPage,
-    (internalPage + 1) * effectiveItemsPerPage
+  const currentPageData = useMemo<RankingData[]>(
+    () =>
+      filteredData.slice(
+        internalPage * effectiveItemsPerPage,
+        (internalPage + 1) * effectiveItemsPerPage
+      ),
+    [filteredData, internalPage, effectiveItemsPerPage]
   );
 
   // 🔥 準備合併圖表資料
-  const chartData = currentPageData.map((item) => ({
-    ...item,
-    priceValue: item.price ? parseFloat(item.price) : null,
-  }));
+  const chartData = useMemo<ChartDataItem[]>(
+    () =>
+      currentPageData.map((item) => ({
+        ...item,
+        priceValue: item.price ? parseFloat(item.price) : null,
+      })),
+    [currentPageData]
+  );
 
   // 🔥 動態計算 Y 軸範圍（分數）
   const scoreRange = useMemo(() => {
@@ -353,9 +411,10 @@ export default function RankingModal({
   }, [chartData]);
 
   // 計算有房價資料的站點數量
-  const priceCount = chartData.filter(
-    (item) => item.priceValue !== null
-  ).length;
+  const priceCount = useMemo(
+    () => chartData.filter((item) => item.priceValue !== null).length,
+    [chartData]
+  );
 
   // 🔥 路線切換時重置頁碼
   useEffect(() => {
@@ -367,6 +426,8 @@ export default function RankingModal({
     if (isOpen) {
       setInternalPage(0);
       setSelectedLineFilter("all");
+      setComparisonMode(false);
+      setSelectedStations([]);
     }
   }, [isOpen]);
 
@@ -379,6 +440,31 @@ export default function RankingModal({
   const handleNextPage = () => {
     if (internalPage < filteredTotalPages - 1) {
       setInternalPage(internalPage + 1);
+    }
+  };
+
+  // 🔥 處理站點選擇
+  const handleStationSelect = (stationId: string) => {
+    if (!comparisonMode) {
+      onBarClick({ stationId });
+      return;
+    }
+
+    setSelectedStations((prev) => {
+      if (prev.includes(stationId)) {
+        return prev.filter((id) => id !== stationId);
+      } else if (prev.length < 3) {
+        return [...prev, stationId];
+      }
+      return prev;
+    });
+  };
+
+  // 🔥 開始比對
+  const handleStartComparison = () => {
+    if (onCompareStations && selectedStations.length >= 2) {
+      onCompareStations(selectedStations);
+      onClose();
     }
   };
 
@@ -404,7 +490,6 @@ export default function RankingModal({
                   <h2 className="text-lg md:text-xl font-bold text-white">
                     站點排名 (第 {internalPage + 1} / {filteredTotalPages} 頁)
                   </h2>
-                  {/* 🔥 手機版提示 */}
                   {isMobile && (
                     <p className="text-xs text-blue-200 mt-1">
                       手機版每頁顯示 {effectiveItemsPerPage} 站
@@ -436,6 +521,93 @@ export default function RankingModal({
                 </div>
               </div>
             </div>
+
+            {/* 🔥 比對模式控制區 */}
+            {onCompareStations && (
+              <div className="mb-4 p-4 bg-white rounded-lg border-2 border-gray-200">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <ArrowUpDown className="w-5 h-5 text-[#003d82]" />
+                    <div>
+                      <h3 className="text-sm font-bold text-gray-800">
+                        站點比對模式
+                      </h3>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        點擊圖表選擇站點（最多 3 站）
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setComparisonMode(!comparisonMode);
+                      setSelectedStations([]);
+                    }}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      comparisonMode
+                        ? "bg-[#003d82] text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    {comparisonMode ? "取消選擇" : "開始選擇"}
+                  </button>
+                </div>
+
+                {/* 🔥 已選站點顯示 */}
+                {comparisonMode && (
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs font-medium text-gray-600">
+                          已選 {selectedStations.length} / 3 站
+                        </span>
+                        {selectedStations.length > 0 && (
+                          <button
+                            onClick={() => setSelectedStations([])}
+                            className="text-xs text-gray-500 hover:text-red-600 transition-colors"
+                          >
+                            清除
+                          </button>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedStations.map((stationId, index) => {
+                          const station = rankingData.find(
+                            (s) => s.stationId === stationId
+                          );
+                          return (
+                            <div
+                              key={stationId}
+                              className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5"
+                            >
+                              <span className="w-5 h-5 rounded-full bg-[#003d82] text-white text-xs font-bold flex items-center justify-center">
+                                {index + 1}
+                              </span>
+                              <span className="text-sm font-medium text-gray-700">
+                                {station?.name}
+                              </span>
+                              <button
+                                onClick={() => handleStationSelect(stationId)}
+                                className="text-gray-400 hover:text-red-500 transition-colors"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    {selectedStations.length >= 2 && (
+                      <button
+                        onClick={handleStartComparison}
+                        className="px-6 py-2.5 bg-[#003d82] text-white rounded-lg text-sm font-bold hover:bg-[#002d5f] transition-colors shadow-md"
+                      >
+                        開始比對
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* 路線篩選器 */}
             <div className="mb-4">
@@ -520,6 +692,11 @@ export default function RankingModal({
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-bold text-gray-700">
                   綜合分數排名 vs 平均房價
+                  {comparisonMode && (
+                    <span className="ml-2 text-xs text-[#003d82] bg-blue-50 px-2 py-1 rounded">
+                      點擊長條選擇站點
+                    </span>
+                  )}
                 </h3>
                 {priceCount > 0 && (
                   <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
@@ -548,7 +725,6 @@ export default function RankingModal({
                         interval={0}
                         tick={{ fontSize: isMobile ? 9 : 10, fill: "#4b5563" }}
                       />
-                      {/* 🔥 左側 Y 軸：分數（動態範圍） */}
                       <YAxis
                         yAxisId="left"
                         label={{
@@ -570,7 +746,6 @@ export default function RankingModal({
                         axisLine={{ stroke: "#003d82", strokeWidth: 2 }}
                         tickLine={{ stroke: "#003d82" }}
                       />
-                      {/* 🎨 右側 Y 軸：房價（黑色系） */}
                       <YAxis
                         yAxisId="right"
                         orientation="right"
@@ -593,12 +768,13 @@ export default function RankingModal({
                         tickLine={{ stroke: "#1f2937" }}
                       />
                       <Tooltip content={<CustomTooltip />} />
-                      {/* 🎨 長條圖：分數（帶透明度） */}
                       <Bar
                         yAxisId="left"
                         dataKey="score"
                         name="綜合分數"
-                        onClick={onBarClick}
+                        onClick={(data: ChartDataItem) =>
+                          handleStationSelect(data.stationId)
+                        }
                         cursor="pointer"
                         shape={<CustomBar />}
                       >
@@ -609,12 +785,21 @@ export default function RankingModal({
                           );
                           const fillValue =
                             colors.length > 1 ? colors : colors[0];
+
+                          const isSelected = selectedStations.includes(
+                            entry.stationId
+                          );
+
                           return (
-                            <Cell key={`cell-${index}`} fill={fillValue} />
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={fillValue}
+                              stroke={isSelected ? "#003d82" : "none"}
+                              strokeWidth={isSelected ? 3 : 0}
+                            />
                           );
                         })}
                       </Bar>
-                      {/* 🎨 折線圖：房價（黑色加粗） */}
                       <Line
                         yAxisId="right"
                         type="monotone"

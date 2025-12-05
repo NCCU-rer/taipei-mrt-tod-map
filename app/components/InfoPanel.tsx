@@ -25,11 +25,12 @@ import {
   Building2,
   MapPinned,
   CarFront,
+  LucideIcon,
 } from "lucide-react";
 import { StationData } from "../types/mrt";
 
 // 雷達圖標籤對應圖示
-const getRadarIcon = (subject: string) => {
+const getRadarIcon = (subject: string): LucideIcon => {
   if (subject.includes("步行")) return Footprints;
   if (subject.includes("自行車")) return Bike;
   if (subject.includes("街道")) return Network;
@@ -41,15 +42,18 @@ const getRadarIcon = (subject: string) => {
   return Activity;
 };
 
+// 🔥 雷達圖資料點類型
+interface RadarDataItem {
+  subject: string;
+  value: number;
+}
+
 // 🔥 修正型別定義
 interface StationDetails {
   score: number; // TOD整體分數
   count: number | null;
   price: number | null;
-  radar: Array<{
-    subject: string;
-    value: number; // 標準化數值 (0-1)
-  }>;
+  radar: RadarDataItem[];
   raw: {
     // 原始數據
     步行友善度: number;
@@ -153,7 +157,7 @@ export default function InfoPanel({
   stationInfo,
   stationDetails,
 }: InfoPanelProps) {
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number): string => {
     return new Intl.NumberFormat("zh-TW", { maximumFractionDigits: 0 }).format(
       price
     );
@@ -299,7 +303,7 @@ export default function InfoPanel({
                     cy="50%"
                     outerRadius="70%"
                     data={stationDetails.radar.filter(
-                      (item: any) => !isNaN(item.value)
+                      (item) => !isNaN(item.value)
                     )}
                   >
                     <PolarGrid stroke="#e5e7eb" />
@@ -328,13 +332,13 @@ export default function InfoPanel({
               {/* 🔥 指標列表 - 使用標準化數據顯示百分比 */}
               <div className="space-y-2">
                 {stationDetails.radar
-                  .filter((item: any) => !isNaN(item.value))
-                  .map((item: any, index: number) => {
+                  .filter((item) => !isNaN(item.value))
+                  .map((item, index) => {
                     const IconComponent = getRadarIcon(item.subject);
                     const percentage = (item.value * 100).toFixed(0);
                     return (
                       <div
-                        key={index}
+                        key={`indicator-${index}-${item.subject}`}
                         className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg"
                       >
                         <IconComponent className="w-5 h-5 text-gray-400 flex-shrink-0" />

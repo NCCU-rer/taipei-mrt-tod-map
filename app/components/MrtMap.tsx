@@ -13,12 +13,77 @@ import { LINES, getLineColor, getLineColors } from "../data/lines";
 import ControlPanel, { INDICATORS } from "./ControlPanel";
 import InfoPanel from "./InfoPanel";
 import RankingModal from "./RankingModal";
+import ComparisonModal from "./ComparisonModal";
 
 // 導入圖示
-import { ChevronDown, ChevronUp, Train, X, Info, Menu } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Train,
+  X,
+  Info,
+  Menu,
+  ArrowUpDown,
+} from "lucide-react";
 
 // 顯示模式
 type DisplayMode = "tod" | "price";
+
+// 🔥 站點詳細資料類型
+interface StationDetails {
+  score: number;
+  count: number | null;
+  price: number | null;
+  radar: Array<{
+    subject: string;
+    value: number;
+  }>;
+  raw: {
+    步行友善度: number;
+    自行車便利度: number;
+    街道連通度: number;
+    大眾運輸可達度: number;
+    生活機能多樣性: number;
+    都市密度強度: number;
+    區域整合度: number;
+    低汽車依賴度: number;
+  };
+  normalized: {
+    步行友善度: number;
+    自行車便利度: number;
+    街道連通度: number;
+    大眾運輸可達度: number;
+    生活機能多樣性: number;
+    都市密度強度: number;
+    區域整合度: number;
+    低汽車依賴度: number;
+  };
+}
+
+// 🔥 比對站點資料類型
+interface ComparisonStation {
+  station: StationData;
+  details: StationDetails | null;
+  color: string;
+}
+
+// 🔥 排名資料類型
+interface RankingDataItem {
+  name: string;
+  score: number;
+  rank: number;
+  stationId: string;
+  color: string;
+  colors: string[];
+  price: string | null;
+  lines?: string[];
+}
+
+// 🔥 長條圖點擊事件資料類型
+interface BarClickData {
+  stationId: string;
+  [key: string]: unknown;
+}
 
 // --- 單個站點元件 ---
 interface StationNodeProps {
@@ -31,6 +96,9 @@ interface StationNodeProps {
   selectedLine: string;
   rank?: number;
   hasData: boolean;
+  isComparisonMode?: boolean;
+  isInComparison?: boolean;
+  comparisonIndex?: number;
 }
 
 const StationNode: React.FC<StationNodeProps> = ({
@@ -43,24 +111,22 @@ const StationNode: React.FC<StationNodeProps> = ({
   selectedLine,
   rank,
   hasData,
+  isComparisonMode = false,
+  isInComparison = false,
+  comparisonIndex,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const radius = 18;
-
-  // 🎨 圓圈底色：統一使用白色
   const fill = hasData ? "#ffffff" : "#d1d5db";
+  const strokeWidth = isInComparison ? 4 : isSelected ? 3 : 2.5;
 
-  const strokeWidth = isSelected ? 3 : 2.5;
-
-  // 🎨 根據顯示模式決定數字顏色
   const valueColor = hasData
     ? displayMode === "tod"
       ? "#003d82"
-      : "#c8102e" // TOD 藍色，房價紅色
-    : "#6b7280"; // 無資料灰色
+      : "#c8102e"
+    : "#6b7280";
 
-  // 🎨 數字大小：14
   const valueFontSize = hasData ? 14 : 13;
 
   const stationColors = getLineColors(station);
@@ -105,6 +171,7 @@ const StationNode: React.FC<StationNodeProps> = ({
       : "middle";
 
   const gradientId = `gradient-${station.id}`;
+  const comparisonColors = ["#003d82", "#0056b3", "#0072c6"];
 
   return (
     <g
@@ -136,15 +203,33 @@ const StationNode: React.FC<StationNodeProps> = ({
 
       <circle r={28} fill="transparent" />
 
-      {/* 🎨 圓圈：白色底 + 路線顏色邊框 */}
+      {isInComparison && comparisonIndex !== undefined && (
+        <circle
+          r={radius + 6}
+          fill="none"
+          stroke={comparisonColors[comparisonIndex]}
+          strokeWidth="3"
+          opacity="0.6"
+          style={{
+            animation: "pulse 2s ease-in-out infinite",
+          }}
+        />
+      )}
+
       <circle
         r={radius}
         fill={fill}
-        stroke={finalColors.length > 1 ? `url(#${gradientId})` : finalColors[0]}
+        stroke={
+          isInComparison && comparisonIndex !== undefined
+            ? comparisonColors[comparisonIndex]
+            : finalColors.length > 1
+            ? `url(#${gradientId})`
+            : finalColors[0]
+        }
         strokeWidth={strokeWidth}
         style={{
           filter:
-            isSelected || (isHovered && hasData)
+            isSelected || (isHovered && hasData) || isInComparison
               ? "drop-shadow(0px 3px 6px rgba(0,0,0,0.4))"
               : "drop-shadow(0px 1px 2px rgba(0,0,0,0.2))",
           transition: "all 0.2s ease-out",
@@ -152,7 +237,6 @@ const StationNode: React.FC<StationNodeProps> = ({
         }}
       />
 
-      {/* 🎨 數字（根據模式改變顏色，無白色描邊） */}
       <text
         dy=".35em"
         fill={valueColor}
@@ -167,7 +251,32 @@ const StationNode: React.FC<StationNodeProps> = ({
         {displayValue}
       </text>
 
-      {rank && rank <= 10 && hasData && (
+      {isInComparison && comparisonIndex !== undefined && (
+        <g>
+          <circle
+            cx={-radius + 3}
+            cy={-radius + 3}
+            r="10"
+            fill={comparisonColors[comparisonIndex]}
+            stroke="#fff"
+            strokeWidth="2"
+          />
+          <text
+            x={-radius + 3}
+            y={-radius + 3}
+            dy=".35em"
+            fill="#fff"
+            fontSize={11}
+            fontWeight="bold"
+            textAnchor="middle"
+            style={{ pointerEvents: "none", userSelect: "none" }}
+          >
+            {comparisonIndex + 1}
+          </text>
+        </g>
+      )}
+
+      {rank && rank <= 10 && hasData && !isComparisonMode && (
         <g>
           <circle
             cx={radius - 3}
@@ -198,10 +307,12 @@ const StationNode: React.FC<StationNodeProps> = ({
         dy={
           labelPosition === "left" || labelPosition === "right" ? ".35em" : "0"
         }
-        fill={hasData ? (isSelected ? "#000" : "#555") : "#999"}
+        fill={
+          hasData ? (isSelected || isInComparison ? "#000" : "#555") : "#999"
+        }
         fontSize={14}
         fontFamily="Noto Sans CJK TC Regular"
-        fontWeight={isSelected ? "bold" : "normal"}
+        fontWeight={isSelected || isInComparison ? "bold" : "normal"}
         textAnchor={textAnchor}
         style={{
           pointerEvents: "none",
@@ -211,13 +322,19 @@ const StationNode: React.FC<StationNodeProps> = ({
       >
         {station.name}
       </text>
+
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 0.6; }
+          50% { opacity: 0.3; }
+        }
+      `}</style>
     </g>
   );
 };
 
 // --- 主元件 ---
 export default function MrtMap() {
-  // 🔥 預設選擇台北車站 (R10)
   const [selectedStationId, setSelectedStationId] = useState<string | null>(
     "R10"
   );
@@ -234,7 +351,13 @@ export default function MrtMap() {
   const [isLegendOpen, setIsLegendOpen] = useState(true);
   const [rankingPage, setRankingPage] = useState(0);
 
-  const getTodValue = (stationId: string) => {
+  // 🔥 比對模式狀態
+  const [isComparisonMode, setIsComparisonMode] = useState(false);
+  const [comparisonStations, setComparisonStations] = useState<string[]>([]);
+  const [showComparisonModal, setShowComparisonModal] = useState(false);
+  const [isComparisonPanelOpen, setIsComparisonPanelOpen] = useState(true);
+
+  const getTodValue = (stationId: string): string | number => {
     const station = STATIONS.find((s) => s.id === stationId);
     if (!station) return "-";
     const stationName = station.name.replace("站", "");
@@ -243,7 +366,7 @@ export default function MrtMap() {
     return value !== undefined && !isNaN(value) ? value.toFixed(1) : "-";
   };
 
-  const getPriceValue = (stationId: string) => {
+  const getPriceValue = (stationId: string): string | number => {
     const station = STATIONS.find((s) => s.id === stationId);
     if (!station) return "-";
     const stationName = station.name.replace("站", "");
@@ -252,39 +375,33 @@ export default function MrtMap() {
     return (details.price / 10000).toFixed(0);
   };
 
-  const getCustomScore = (stationId: string) => {
+  const getCustomScore = (stationId: string): number => {
     const station = STATIONS.find((s) => s.id === stationId);
     if (!station) return 0;
     const stationName = station.name.replace("站", "");
     const details = TOD_DETAILS[stationName]?.[selectedYear]?.[selectedBuffer];
     if (!details || !details.raw) return 0;
 
-    // 🔥 判斷是否全選（8個指標都選）
     const isAllSelected = selectedIndicators.length === INDICATORS.length;
 
     if (isAllSelected) {
-      // ✅ 全選時：直接使用 TOD 整體分數
       return details.score;
     } else {
-      // ✅ 部分選擇時：使用原始數據相加
       const selectedValues = selectedIndicators
         .map((id) => {
           const indicator = INDICATORS.find((i) => i.id === id);
           if (!indicator) return null;
-
-          // 🔥 使用原始數據（raw）
           const value = details.raw[indicator.key as keyof typeof details.raw];
           return typeof value === "number" && !isNaN(value) ? value : null;
         })
         .filter((v): v is number => v !== null);
 
       if (selectedValues.length === 0) return 0;
-
-      // 🔥 直接相加（不取平均，不乘以 100）
       const sum = selectedValues.reduce((acc, val) => acc + val, 0);
       return sum;
     }
   };
+
   const rankedStations = useMemo(() => {
     const stationsWithScores = STATIONS.map((station) => {
       const stationName = station.name.replace("站", "");
@@ -303,15 +420,63 @@ export default function MrtMap() {
     }));
   }, [selectedIndicators, selectedYear, selectedBuffer]);
 
-  const getStationRank = (stationId: string) => {
+  const getStationRank = (stationId: string): number | undefined => {
     const found = rankedStations.find((item) => item.station.id === stationId);
     return found ? found.rank : undefined;
   };
 
   const handleStationClick = (station: StationData) => {
-    setSelectedStationId(station.id);
-    setIsMobileInfoOpen(true);
+    if (isComparisonMode) {
+      setComparisonStations((prev) => {
+        if (prev.includes(station.id)) {
+          return prev.filter((id) => id !== station.id);
+        } else {
+          if (prev.length < 3) {
+            return [...prev, station.id];
+          } else {
+            return prev;
+          }
+        }
+      });
+    } else {
+      setSelectedStationId(station.id);
+      setIsMobileInfoOpen(true);
+    }
   };
+
+  const handleShowComparison = () => {
+    if (comparisonStations.length >= 2) {
+      setShowComparisonModal(true);
+    }
+  };
+
+  // 🔥 從排名視窗選擇站點進行比對
+  const handleCompareFromRanking = (stationIds: string[]) => {
+    setComparisonStations(stationIds);
+    setShowComparisonModal(true);
+  };
+
+  const comparisonData = useMemo<ComparisonStation[]>(() => {
+    return comparisonStations
+      .map((stationId) => {
+        const station = STATIONS.find((s) => s.id === stationId);
+        if (!station) return null;
+
+        const stationName = station.name.replace("站", "");
+        const details =
+          TOD_DETAILS[stationName]?.[selectedYear]?.[selectedBuffer];
+
+        const stationColors = getLineColors(station);
+        const color = stationColors[0] || getLineColor(station.id);
+
+        return {
+          station,
+          details,
+          color,
+        };
+      })
+      .filter((item): item is ComparisonStation => item !== null);
+  }, [comparisonStations, selectedYear, selectedBuffer]);
 
   const handleLegendClick = (lineId: string) => {
     setSelectedLine(selectedLine === lineId ? "all" : lineId);
@@ -338,7 +503,10 @@ export default function MrtMap() {
       : null;
   }, [selectedStationId, selectedYear, selectedBuffer, selectedIndicators]);
 
-  const checkStationInLine = (station: StationData, lineId: string) => {
+  const checkStationInLine = (
+    station: StationData,
+    lineId: string
+  ): boolean => {
     if (lineId === "all") return true;
     if (station.lines && station.lines.includes(lineId)) return true;
     if (station.id.startsWith(lineId)) return true;
@@ -347,7 +515,7 @@ export default function MrtMap() {
 
   const ITEMS_PER_PAGE = 20;
 
-  const allRankingData = useMemo(() => {
+  const allRankingData = useMemo<RankingDataItem[]>(() => {
     return rankedStations
       .map((item) => {
         const station = item.station;
@@ -367,7 +535,7 @@ export default function MrtMap() {
 
         return {
           name: station.name,
-          score: Number(item.score.toFixed(1)), // 🔥 直接使用分數，不乘以100
+          score: Number(item.score.toFixed(1)),
           rank: item.rank,
           stationId: station.id,
           color: colors[0] || "#999",
@@ -386,7 +554,7 @@ export default function MrtMap() {
 
   const totalPages = Math.ceil(allRankingData.length / ITEMS_PER_PAGE);
 
-  const handleBarClick = (data: any) => {
+  const handleBarClick = (data: BarClickData) => {
     if (data && data.stationId) {
       setSelectedStationId(data.stationId);
       setShowRankingModal(false);
@@ -506,9 +674,100 @@ export default function MrtMap() {
         </>
       )}
 
-      {/* 🔥 中間地圖區域 - 圖例在這裡面 */}
+      {/* 中間地圖區域 */}
       <div className="flex-1 relative bg-white overflow-auto">
-        {/* 🔥 桌面版圖例 - 使用 absolute 定位在地圖區域內 */}
+        {/* 🔥 比對功能按鈕 - 右下角 - 可收起版本 */}
+        <div className="absolute bottom-6 right-6 z-10">
+          {!isComparisonPanelOpen ? (
+            // 🔥 收起狀態：圓形按鈕
+            <button
+              onClick={() => setIsComparisonPanelOpen(true)}
+              className={`p-3 rounded-full shadow-lg border-2 transition-all hover:scale-110 ${
+                isComparisonMode
+                  ? "bg-[#003d82] border-[#003d82] text-white"
+                  : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
+              }`}
+            >
+              <ArrowUpDown className="w-5 h-5" />
+              {isComparisonMode && comparisonStations.length > 0 && (
+                <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                  {comparisonStations.length}
+                </div>
+              )}
+            </button>
+          ) : (
+            // 🔥 展開狀態：完整面板
+            <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 w-40">
+              {/* 標題與收起按鈕 */}
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-sm font-bold text-gray-800">站點比對</div>
+                <button
+                  onClick={() => setIsComparisonPanelOpen(false)}
+                  className="p-1 hover:bg-gray-100 rounded transition-colors"
+                >
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                </button>
+              </div>
+              <div className="text-xs text-gray-500 mb-2">最多選擇 3 站</div>
+
+              {/* 開關按鈕 */}
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <span
+                  className={`text-xs font-medium ${
+                    !isComparisonMode ? "text-gray-800" : "text-gray-400"
+                  }`}
+                >
+                  關
+                </span>
+                <button
+                  onClick={() => {
+                    setIsComparisonMode(!isComparisonMode);
+                    if (isComparisonMode) {
+                      setComparisonStations([]);
+                    }
+                  }}
+                  className={`relative w-12 h-6 rounded-full transition-colors ${
+                    isComparisonMode ? "bg-[#003d82]" : "bg-gray-300"
+                  }`}
+                >
+                  <div
+                    className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                      isComparisonMode ? "translate-x-7" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+                <span
+                  className={`text-xs font-medium ${
+                    isComparisonMode ? "text-gray-800" : "text-gray-400"
+                  }`}
+                >
+                  開
+                </span>
+              </div>
+
+              {/* 已選站點數量 */}
+              {isComparisonMode && (
+                <div className="text-center pt-2 border-t border-gray-100">
+                  <div className="text-xs text-gray-600 mb-2">
+                    已選 {comparisonStations.length} / 3 站
+                  </div>
+
+                  {/* 比對按鈕 */}
+                  {comparisonStations.length >= 2 && (
+                    <button
+                      onClick={handleShowComparison}
+                      className="w-full py-1.5 px-3 bg-[#003d82] text-white rounded-lg text-xs font-medium hover:bg-[#002d5f] transition-colors"
+                    >
+                      開始比對
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* 桌面版圖例 */}
         <div className="hidden md:block absolute top-4 right-4 z-10">
           {!isLegendOpen ? (
             <button
@@ -585,7 +844,7 @@ export default function MrtMap() {
           )}
         </div>
 
-        {/* 🔥 手機版圖例 - 使用 absolute 定位在地圖區域內 */}
+        {/* 手機版圖例 */}
         <div className="md:hidden absolute top-4 right-4 z-10">
           {!isLegendOpen ? (
             <button
@@ -666,7 +925,11 @@ export default function MrtMap() {
             viewBox="80 -30 1269.96 1150"
             className="w-full h-auto max-w-full max-h-full"
             preserveAspectRatio="xMidYMid meet"
-            onClick={() => setSelectedStationId(null)}
+            onClick={() => {
+              if (!isComparisonMode) {
+                setSelectedStationId(null);
+              }
+            }}
           >
             <g fill="none" strokeWidth="10" style={{ pointerEvents: "none" }}>
               <path
@@ -746,6 +1009,9 @@ export default function MrtMap() {
               const isDimmed = !checkStationInLine(station, selectedLine);
               const rank = getStationRank(station.id);
 
+              const isInComparison = comparisonStations.includes(station.id);
+              const comparisonIndex = comparisonStations.indexOf(station.id);
+
               return (
                 <StationNode
                   key={station.id}
@@ -758,6 +1024,11 @@ export default function MrtMap() {
                   selectedLine={selectedLine}
                   rank={rank}
                   hasData={hasAnyData}
+                  isComparisonMode={isComparisonMode}
+                  isInComparison={isInComparison}
+                  comparisonIndex={
+                    comparisonIndex >= 0 ? comparisonIndex : undefined
+                  }
                 />
               );
             })}
@@ -782,7 +1053,7 @@ export default function MrtMap() {
       </div>
 
       {/* 手機版：底部資訊抽屜 */}
-      {currentStationInfo && (
+      {currentStationInfo && !isComparisonMode && (
         <>
           <div
             className={`md:hidden fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${
@@ -821,7 +1092,7 @@ export default function MrtMap() {
         </>
       )}
 
-      {/* 排名視窗 Modal */}
+      {/* 🔥 排名視窗 Modal - 加入比對功能 */}
       <RankingModal
         isOpen={showRankingModal}
         onClose={() => setShowRankingModal(false)}
@@ -834,6 +1105,14 @@ export default function MrtMap() {
         onPrevPage={handlePrevPage}
         onNextPage={handleNextPage}
         onBarClick={handleBarClick}
+        onCompareStations={handleCompareFromRanking}
+      />
+
+      {/* 比對視窗 Modal */}
+      <ComparisonModal
+        isOpen={showComparisonModal}
+        onClose={() => setShowComparisonModal(false)}
+        stations={comparisonData}
       />
     </div>
   );
