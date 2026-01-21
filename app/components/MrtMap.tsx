@@ -579,7 +579,7 @@ export default function MrtMap() {
     .filter(Boolean) as string[];
 
   return (
-    <div className="relative w-full h-screen flex flex-col md:flex-row bg-gray-50">
+    <div className="relative w-full h-full flex flex-col md:flex-row bg-gray-50">
       {/* 桌面版：左側控制面板 */}
       <div className="hidden md:flex w-80 bg-white border-r border-gray-200 shadow-xl flex-col overflow-hidden">
         <div className="p-5 border-b border-gray-200 bg-[#003d82]">
