@@ -33,6 +33,7 @@ import {
   CarFront,
   Award,
   ArrowUpDown,
+  ExternalLink,
 } from "lucide-react";
 import { StationData } from "../types/mrt";
 
@@ -119,6 +120,13 @@ const getIndicatorIcon = (subject: string) => {
   if (subject.includes("整合")) return MapPinned;
   if (subject.includes("汽車")) return CarFront;
   return Activity;
+};
+
+// 🏠 生成房價資訊連結
+const getPriceInfoUrl = (stationName: string): string => {
+  const cleanName = stationName.replace("站", "");
+  const encodedName = encodeURIComponent(`${cleanName}站`);
+  return `https://buy.yungching.com.tw/mrt/%E5%8F%B0%E5%8C%97%E5%B8%82-_c/?kw=${encodedName}`;
 };
 
 // 🎨 格式化價格
@@ -308,8 +316,8 @@ export default function ComparisonModal({
                           <span className="text-lg font-bold text-gray-800">
                             {station.details!.price
                               ? `${formatPrice(
-                                  station.details!.price / 10000
-                                )} 萬`
+                                station.details!.price / 10000
+                              )} 萬`
                               : "N/A"}
                           </span>
                         </div>
@@ -327,6 +335,18 @@ export default function ComparisonModal({
                               : "N/A"}
                           </span>
                         </div>
+
+                        {/* 🔥 查看房價導流按鈕 */}
+                        <a
+                          href={getPriceInfoUrl(station.station.name)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-1 flex items-center justify-center gap-2 w-full py-2 px-3 rounded-lg text-sm font-bold text-white transition-all hover:opacity-90 active:scale-95"
+                          style={{ backgroundColor: station.color }}
+                        >
+                          查看區域房價
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
                       </div>
                     </div>
                   ))}
@@ -512,9 +532,8 @@ export default function ComparisonModal({
                                   className="text-center py-3 px-2"
                                 >
                                   <span
-                                    className={`font-bold ${
-                                      isMax ? "text-lg" : ""
-                                    }`}
+                                    className={`font-bold ${isMax ? "text-lg" : ""
+                                      }`}
                                     style={{
                                       color: isMax ? station.color : "#6b7280",
                                     }}

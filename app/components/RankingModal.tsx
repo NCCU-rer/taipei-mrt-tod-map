@@ -238,28 +238,28 @@ export default function RankingModal({
       selectedLineFilter === "all"
         ? rankingData
         : rankingData.filter((item) => {
-            // 判斷是否屬於該路線
-            if (item.lines && item.lines.length > 0) {
-              return item.lines.includes(selectedLineFilter);
-            }
-            if (selectedLineFilter === "BR" && item.stationId.startsWith("BR"))
-              return true;
-            if (
-              selectedLineFilter === "R" &&
-              item.stationId.startsWith("R") &&
-              !item.stationId.startsWith("BR")
-            )
-              return true;
-            if (selectedLineFilter === "G" && item.stationId.startsWith("G"))
-              return true;
-            if (selectedLineFilter === "O" && item.stationId.startsWith("O"))
-              return true;
-            if (selectedLineFilter === "BL" && item.stationId.startsWith("BL"))
-              return true;
-            if (selectedLineFilter === "Y" && item.stationId.startsWith("Y"))
-              return true;
-            return false;
-          }),
+          // 判斷是否屬於該路線
+          if (item.lines && item.lines.length > 0) {
+            return item.lines.includes(selectedLineFilter);
+          }
+          if (selectedLineFilter === "BR" && item.stationId.startsWith("BR"))
+            return true;
+          if (
+            selectedLineFilter === "R" &&
+            item.stationId.startsWith("R") &&
+            !item.stationId.startsWith("BR")
+          )
+            return true;
+          if (selectedLineFilter === "G" && item.stationId.startsWith("G"))
+            return true;
+          if (selectedLineFilter === "O" && item.stationId.startsWith("O"))
+            return true;
+          if (selectedLineFilter === "BL" && item.stationId.startsWith("BL"))
+            return true;
+          if (selectedLineFilter === "Y" && item.stationId.startsWith("Y"))
+            return true;
+          return false;
+        }),
     [rankingData, selectedLineFilter]
   );
 
@@ -417,11 +417,10 @@ export default function RankingModal({
                       setComparisonMode(!comparisonMode);
                       setSelectedStations([]);
                     }}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold transition-all border ${
-                      comparisonMode
-                        ? "bg-white text-[#003d82] border-white"
-                        : "bg-[#003d82] text-white border-blue-400 hover:bg-[#002d5f]"
-                    }`}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold transition-all border ${comparisonMode
+                      ? "bg-white text-[#003d82] border-white"
+                      : "bg-[#003d82] text-white border-blue-400 hover:bg-[#002d5f]"
+                      }`}
                   >
                     <ArrowUpDown className="w-4 h-4" />
                     {comparisonMode ? "退出比對" : "站點比對"}
@@ -456,11 +455,10 @@ export default function RankingModal({
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setSelectedLineFilter("all")}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                    selectedLineFilter === "all"
-                      ? "bg-[#003d82] text-white shadow-md ring-2 ring-blue-100"
-                      : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
-                  }`}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${selectedLineFilter === "all"
+                    ? "bg-[#003d82] text-white shadow-md ring-2 ring-blue-100"
+                    : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                    }`}
                 >
                   所有路線
                 </button>
@@ -468,11 +466,10 @@ export default function RankingModal({
                   <button
                     key={line.id}
                     onClick={() => setSelectedLineFilter(line.id)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                      selectedLineFilter === line.id
-                        ? "text-white shadow-md ring-2 ring-opacity-50"
-                        : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
-                    }`}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${selectedLineFilter === line.id
+                      ? "text-white shadow-md ring-2 ring-opacity-50"
+                      : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                      }`}
                     style={{
                       backgroundColor:
                         selectedLineFilter === line.id ? line.color : undefined,
@@ -678,11 +675,10 @@ export default function RankingModal({
                 <button
                   onClick={handleStartComparison}
                   disabled={selectedStations.length < 2}
-                  className={`flex-1 py-2 rounded-lg text-sm font-bold text-white shadow-md transition-all ${
-                    selectedStations.length < 2
-                      ? "bg-gray-300 cursor-not-allowed"
-                      : "bg-[#003d82] hover:bg-[#002d5f] hover:scale-[1.02]"
-                  }`}
+                  className={`flex-1 py-2 rounded-lg text-sm font-bold text-white shadow-md transition-all ${selectedStations.length < 2
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : "bg-[#003d82] hover:bg-[#002d5f] hover:scale-[1.02]"
+                    }`}
                 >
                   開始比對 ({selectedStations.length}/3)
                 </button>

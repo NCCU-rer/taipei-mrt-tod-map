@@ -184,9 +184,21 @@ export default function InfoPanel({
     <div className="animate-in fade-in slide-in-from-right duration-300">
       {/* 站點標題 */}
       <div className="mb-4">
-        <h3 className="text-2xl font-bold text-gray-800 mb-2">
-          {stationInfo.name}
-        </h3>
+        <div className="flex items-start justify-between mb-2">
+          <h3 className="text-2xl font-bold text-gray-800">
+            {stationInfo.name}
+          </h3>
+          {/* 🔥 房價資訊連結 / Prominent CTA */}
+          <a
+            href={getPriceInfoUrl(stationInfo.name)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#c8102e] text-white text-sm font-medium rounded-md hover:bg-[#a00d25] transition-all shadow-sm hover:shadow"
+          >
+            <Home className="w-4 h-4" />
+            查看區域房價
+          </a>
+        </div>
         <div className="flex gap-2">
           {/* 🔥 捷運站資訊連結（處理多線站點） */}
           <a
@@ -197,16 +209,6 @@ export default function InfoPanel({
           >
             <ExternalLink className="w-3 h-3" />
             捷運站資訊
-          </a>
-          {/* 🔥 房價資訊連結 */}
-          <a
-            href={getPriceInfoUrl(stationInfo.name)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs text-[#c8102e] hover:text-[#a00d25] hover:underline transition-colors"
-          >
-            <Home className="w-3 h-3" />
-            查看房價
           </a>
         </div>
       </div>
@@ -257,7 +259,7 @@ export default function InfoPanel({
                 </div>
                 <div className="text-xl font-bold text-gray-800">
                   {stationDetails.count !== null &&
-                  stationDetails.count !== undefined
+                    stationDetails.count !== undefined
                     ? stationDetails.count
                     : "N/A"}
                   <span className="text-sm font-normal text-gray-500 ml-1">
@@ -273,7 +275,7 @@ export default function InfoPanel({
                 </div>
                 <div className="text-xl font-bold text-gray-800">
                   {stationDetails.price !== null &&
-                  stationDetails.price !== undefined
+                    stationDetails.price !== undefined
                     ? formatPrice(stationDetails.price / 10000)
                     : "N/A"}
                   <span className="text-sm font-normal text-gray-500 ml-1">
