@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import dynamic from "next/dynamic";
 
 // 導入類型與資料
 import { StationData } from "../types/mrt";
@@ -15,6 +16,9 @@ import InfoPanel from "./InfoPanel";
 import RankingModal from "./RankingModal";
 import ComparisonModal from "./ComparisonModal";
 
+// 籠 Leaflet 地理地圖（no SSR）
+const GeoMap = dynamic(() => import("./GeoMap"), { ssr: false });
+
 // 導入圖示
 import {
   ChevronDown,
@@ -24,6 +28,8 @@ import {
   Info,
   Menu,
   ArrowUpDown,
+  Map,
+  Network,
 } from "lucide-react";
 
 // 顯示模式
@@ -338,6 +344,8 @@ interface MrtMapProps {
   onOpenMethod?: () => void;
 }
 
+type MapViewMode = "schematic" | "geo";
+
 export default function MrtMap({ onOpenMethod }: MrtMapProps) {
   const [selectedStationId, setSelectedStationId] = useState<string | null>(
     "R10"
@@ -354,6 +362,7 @@ export default function MrtMap({ onOpenMethod }: MrtMapProps) {
   const [isMobileInfoOpen, setIsMobileInfoOpen] = useState(false);
   const [isLegendOpen, setIsLegendOpen] = useState(true);
   const [rankingPage, setRankingPage] = useState(0);
+  const [mapViewMode, setMapViewMode] = useState<MapViewMode>("schematic");
 
   // 🔥 比對模式狀態
   const [isComparisonMode, setIsComparisonMode] = useState(false);
@@ -378,6 +387,19 @@ export default function MrtMap({ onOpenMethod }: MrtMapProps) {
     if (!details || !details.price || details.price === null) return "-";
     return (details.price / 10000).toFixed(0);
   };
+
+  // 🗺️ 所有站點的顯示數值（给 GeoMap 用）
+  const allDisplayValues = useMemo<Record<string, string | number>>(() => {
+    const result: Record<string, string | number> = {};
+    for (const station of STATIONS) {
+      result[station.id] =
+        displayMode === "tod"
+          ? getTodValue(station.id)
+          : getPriceValue(station.id);
+    }
+    return result;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [displayMode, selectedYear, selectedBuffer, selectedIndicators]);
 
   const getCustomScore = (stationId: string): number => {
     const station = STATIONS.find((s) => s.id === stationId);
@@ -702,7 +724,7 @@ export default function MrtMap({ onOpenMethod }: MrtMapProps) {
       {/* 中間地圖區域 */}
       <div className="flex-1 relative bg-white overflow-auto">
         {/* 🔥 比對功能按鈕 - 右下角 - 可收起版本 */}
-        <div className="absolute bottom-6 right-6 z-10">
+        <div className="absolute bottom-6 right-6 z-[20]">
           {!isComparisonPanelOpen ? (
             // 🔥 收起狀態：圓形按鈕
             <button
@@ -788,7 +810,7 @@ export default function MrtMap({ onOpenMethod }: MrtMapProps) {
         </div>
 
         {/* 桌面版圖例 */}
-        <div className="hidden md:block absolute top-4 right-4 z-10">
+        <div className="hidden md:block absolute top-4 right-4 z-[20]">
           {!isLegendOpen ? (
             <button
               onClick={() => setIsLegendOpen(true)}
@@ -861,7 +883,7 @@ export default function MrtMap({ onOpenMethod }: MrtMapProps) {
         </div>
 
         {/* 手機版圖例 */}
-        <div className="md:hidden absolute top-4 right-4 z-10">
+        <div className="md:hidden absolute top-4 right-4 z-[20]">
           {!isLegendOpen ? (
             <button
               onClick={() => setIsLegendOpen(true)}
@@ -930,122 +952,160 @@ export default function MrtMap({ onOpenMethod }: MrtMapProps) {
           )}
         </div>
 
-        {/* SVG 地圖 */}
-        <div className="w-full h-full flex items-center justify-center">
-          <svg
-            version="1.1"
-            viewBox="80 -30 1269.96 1150"
-            className="w-full h-auto max-w-full max-h-full"
-            preserveAspectRatio="xMidYMid meet"
-            onClick={() => {
-              if (!isComparisonMode) {
-                setSelectedStationId(null);
-              }
-            }}
+        {/* 地圖模式切換按鈕 - 左下角 */}
+        <div className="absolute bottom-6 left-6 z-[20]">
+          <button
+            onClick={() => setMapViewMode(mapViewMode === "schematic" ? "geo" : "schematic")}
+            className="flex items-center gap-2 px-3 py-2 bg-white rounded-xl shadow-lg border border-gray-200 hover:shadow-xl hover:border-blue-200 transition-all duration-200 text-sm font-medium"
           >
-            <g fill="none" strokeWidth="10" style={{ pointerEvents: "none" }}>
-              <path
-                d="m 460 102 v -49.999998"
-                stroke="#f98e99"
-                style={{
-                  opacity:
-                    selectedLine === "all" || selectedLine === "R" ? 1 : 0.15,
-                  transition: "opacity 0.3s ease-in-out",
-                }}
-              ></path>
-              <path
-                d="m 760 1035 v 75"
-                stroke="#cce226"
-                style={{
-                  opacity:
-                    selectedLine === "all" || selectedLine === "G" ? 1 : 0.15,
-                  transition: "opacity 0.3s ease-in-out",
-                }}
-              ></path>
-              <path
-                d="m 1069.7109 553.2889 h -605 c -17.59453 0 -40 22.40547 -40 40 v 125 c 0 14.26086 15.73915 30 30 30 h 85 l 110 110 c 7.35863 7.35863 15 18.39002 15 25 v 120 c 0 14.26086 15.73915 30 30 30  h 220"
-                stroke="#007c59"
-                style={{
-                  opacity:
-                    selectedLine === "all" || selectedLine === "G" ? 1 : 0.15,
-                  transition: "opacity 0.3s ease-in-out",
-                }}
-              ></path>
-              <path
-                d="m 125 102 h 340 c 75 0 75 0 75 75 v 570 h 525"
-                stroke="#d12d33"
-                style={{
-                  opacity:
-                    selectedLine === "all" || selectedLine === "R" ? 1 : 0.15,
-                  transition: "opacity 0.3s ease-in-out",
-                }}
-              ></path>
-              <path
-                d="m 276 1058 v -25 -280 l 85 -90 c 15 -15 25 -15 55 -15 h 800"
-                stroke="#0072c6"
-                style={{
-                  opacity:
-                    selectedLine === "all" || selectedLine === "BL" ? 1 : 0.15,
-                  transition: "opacity 0.3s ease-in-out",
-                }}
-              ></path>
-              <path
-                d="m 1174.7109 943.2889 h -360.00008 c -34.28884 0 -59.99992 -40.71114 -59.99992 -75 v -445 c 0 -50 0 -50 55 -50 h 370 c 45 0 45 0 45 45 v 230"
-                stroke="#aa753f"
-                style={{
-                  opacity:
-                    selectedLine === "all" || selectedLine === "BR" ? 1 : 0.15,
-                  transition: "opacity 0.3s ease-in-out",
-                }}
-              ></path>
-              <g
-                stroke="#fca311"
-                style={{
-                  opacity:
-                    selectedLine === "all" || selectedLine === "O" ? 1 : 0.15,
-                  transition: "opacity 0.3s ease-in-out",
-                }}
-              >
-                <path d="m 409.7109 983.28889 l 235 -234.99999 v -270 c 0 -20 -10 -30 -30 -30 h -180 l -287 287 v 125"></path>
-                <path d="M 434.73522,447.69034 209.7109,223.2889"></path>
-              </g>
-            </g>
-
-            {STATIONS.map((station) => {
-              const stationName = station.name.replace("站", "");
-              const hasAnyData = TOD_DATA[stationName] !== undefined;
-              const displayValue =
-                displayMode === "tod"
-                  ? getTodValue(station.id)
-                  : getPriceValue(station.id);
-              const isDimmed = !checkStationInLine(station, selectedLine);
-              const rank = getStationRank(station.id);
-
-              const isInComparison = comparisonStations.includes(station.id);
-              const comparisonIndex = comparisonStations.indexOf(station.id);
-
-              return (
-                <StationNode
-                  key={station.id}
-                  station={station}
-                  displayValue={displayValue}
-                  displayMode={displayMode}
-                  isSelected={selectedStationId === station.id}
-                  isDimmed={isDimmed}
-                  onClick={handleStationClick}
-                  selectedLine={selectedLine}
-                  rank={rank}
-                  hasData={hasAnyData}
-                  isComparisonMode={isComparisonMode}
-                  isInComparison={isInComparison}
-                  comparisonIndex={
-                    comparisonIndex >= 0 ? comparisonIndex : undefined
-                  }
-                />
-              );
-            })}
-          </svg>
+            {mapViewMode === "schematic" ? (
+              <>
+                <Map className="w-4 h-4 text-[#003d82]" />
+                <span className="text-gray-700">地理地圖</span>
+              </>
+            ) : (
+              <>
+                <Network className="w-4 h-4 text-[#003d82]" />
+                <span className="text-gray-700">路線示意圖</span>
+              </>
+            )}
+          </button>
         </div>
+
+        {/* 地理地圖模式 */}
+        {mapViewMode === "geo" && (
+          <div className="absolute inset-0 z-[0]">
+            <GeoMap
+              selectedStationId={selectedStationId}
+              selectedLine={selectedLine}
+              displayValues={allDisplayValues}
+              displayMode={displayMode}
+              comparisonStations={comparisonStations}
+              isComparisonMode={isComparisonMode}
+              onStationClick={handleStationClick}
+            />
+          </div>
+        )}
+
+        {/* SVG 示意圖 */}
+        {mapViewMode === "schematic" && (
+          <div className="w-full h-full flex items-center justify-center">
+            <svg
+              version="1.1"
+              viewBox="80 -30 1269.96 1150"
+              className="w-full h-auto max-w-full max-h-full"
+              preserveAspectRatio="xMidYMid meet"
+              onClick={() => {
+                if (!isComparisonMode) {
+                  setSelectedStationId(null);
+                }
+              }}
+            >
+              <g fill="none" strokeWidth="10" style={{ pointerEvents: "none" }}>
+                <path
+                  d="m 460 102 v -49.999998"
+                  stroke="#f98e99"
+                  style={{
+                    opacity:
+                      selectedLine === "all" || selectedLine === "R" ? 1 : 0.15,
+                    transition: "opacity 0.3s ease-in-out",
+                  }}
+                ></path>
+                <path
+                  d="m 760 1035 v 75"
+                  stroke="#cce226"
+                  style={{
+                    opacity:
+                      selectedLine === "all" || selectedLine === "G" ? 1 : 0.15,
+                    transition: "opacity 0.3s ease-in-out",
+                  }}
+                ></path>
+                <path
+                  d="m 1069.7109 553.2889 h -605 c -17.59453 0 -40 22.40547 -40 40 v 125 c 0 14.26086 15.73915 30 30 30 h 85 l 110 110 c 7.35863 7.35863 15 18.39002 15 25 v 120 c 0 14.26086 15.73915 30 30 30  h 220"
+                  stroke="#007c59"
+                  style={{
+                    opacity:
+                      selectedLine === "all" || selectedLine === "G" ? 1 : 0.15,
+                    transition: "opacity 0.3s ease-in-out",
+                  }}
+                ></path>
+                <path
+                  d="m 125 102 h 340 c 75 0 75 0 75 75 v 570 h 525"
+                  stroke="#d12d33"
+                  style={{
+                    opacity:
+                      selectedLine === "all" || selectedLine === "R" ? 1 : 0.15,
+                    transition: "opacity 0.3s ease-in-out",
+                  }}
+                ></path>
+                <path
+                  d="m 276 1058 v -25 -280 l 85 -90 c 15 -15 25 -15 55 -15 h 800"
+                  stroke="#0072c6"
+                  style={{
+                    opacity:
+                      selectedLine === "all" || selectedLine === "BL" ? 1 : 0.15,
+                    transition: "opacity 0.3s ease-in-out",
+                  }}
+                ></path>
+                <path
+                  d="m 1174.7109 943.2889 h -360.00008 c -34.28884 0 -59.99992 -40.71114 -59.99992 -75 v -445 c 0 -50 0 -50 55 -50 h 370 c 45 0 45 0 45 45 v 230"
+                  stroke="#aa753f"
+                  style={{
+                    opacity:
+                      selectedLine === "all" || selectedLine === "BR" ? 1 : 0.15,
+                    transition: "opacity 0.3s ease-in-out",
+                  }}
+                ></path>
+                <g
+                  stroke="#fca311"
+                  style={{
+                    opacity:
+                      selectedLine === "all" || selectedLine === "O" ? 1 : 0.15,
+                    transition: "opacity 0.3s ease-in-out",
+                  }}
+                >
+                  <path d="m 409.7109 983.28889 l 235 -234.99999 v -270 c 0 -20 -10 -30 -30 -30 h -180 l -287 287 v 125"></path>
+                  <path d="M 434.73522,447.69034 209.7109,223.2889"></path>
+                </g>
+              </g>
+
+              {STATIONS.map((station) => {
+                const stationName = station.name.replace("站", "");
+                const hasAnyData = TOD_DATA[stationName] !== undefined;
+                const displayValue =
+                  displayMode === "tod"
+                    ? getTodValue(station.id)
+                    : getPriceValue(station.id);
+                const isDimmed = !checkStationInLine(station, selectedLine);
+                const rank = getStationRank(station.id);
+
+                const isInComparison = comparisonStations.includes(station.id);
+                const comparisonIndex = comparisonStations.indexOf(station.id);
+
+                return (
+                  <StationNode
+                    key={station.id}
+                    station={station}
+                    displayValue={displayValue}
+                    displayMode={displayMode}
+                    isSelected={selectedStationId === station.id}
+                    isDimmed={isDimmed}
+                    onClick={handleStationClick}
+                    selectedLine={selectedLine}
+                    rank={rank}
+                    hasData={hasAnyData}
+                    isComparisonMode={isComparisonMode}
+                    isInComparison={isInComparison}
+                    comparisonIndex={
+                      comparisonIndex >= 0 ? comparisonIndex : undefined
+                    }
+                  />
+                );
+              })}
+            </svg>
+          </div>
+        )}
+
       </div>
 
       {/* 桌面版：右側資訊面板 */}

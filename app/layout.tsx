@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "台北捷運 TOD 分析地圖",
-  description: "分析台北捷運沿線 TOD 發展現況",
+  title: "台北捷運TOD生活圈地圖",
+  description: "比較台北捷運各站通勤、機能與生活圈條件",
 };
 
 export default function RootLayout({
