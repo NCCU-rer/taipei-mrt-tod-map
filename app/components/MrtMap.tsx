@@ -334,7 +334,11 @@ const StationNode: React.FC<StationNodeProps> = ({
 };
 
 // --- 主元件 ---
-export default function MrtMap() {
+interface MrtMapProps {
+  onOpenMethod?: () => void;
+}
+
+export default function MrtMap({ onOpenMethod }: MrtMapProps) {
   const [selectedStationId, setSelectedStationId] = useState<string | null>(
     "R10"
   );
@@ -587,14 +591,23 @@ export default function MrtMap() {
             <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
               <Train className="w-6 h-6 text-[#003d82]" />
             </div>
-            <div>
-              <h1 className="text-lg font-bold text-white">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-sm font-bold text-white leading-tight truncate">
                 台北捷運TOD生活圈地圖
               </h1>
-              <p className="text-xs text-blue-100">
+              <p className="text-xs text-blue-100 leading-tight">
                 比較各站通勤、機能與生活圈條件
               </p>
             </div>
+            {onOpenMethod && (
+              <button
+                onClick={onOpenMethod}
+                title="分數怎麼算？"
+                className="flex-shrink-0 p-1.5 rounded-lg hover:bg-white/20 text-blue-200 hover:text-white transition-colors"
+              >
+                <Info className="w-5 h-5" />
+              </button>
+            )}
           </div>
         </div>
         <div className="flex-1 overflow-y-auto p-5">
@@ -623,16 +636,27 @@ export default function MrtMap() {
           <Train className="w-6 h-6 text-white" />
           <h1 className="text-lg font-bold text-white">捷運 TOD 分析</h1>
         </div>
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-        >
-          {isMobileMenuOpen ? (
-            <X className="w-6 h-6 text-white" />
-          ) : (
-            <Menu className="w-6 h-6 text-white" />
+        <div className="flex items-center gap-1">
+          {onOpenMethod && (
+            <button
+              onClick={onOpenMethod}
+              title="分數怎麼算？"
+              className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+            >
+              <Info className="w-5 h-5 text-blue-200" />
+            </button>
           )}
-        </button>
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+          >
+            {isMobileMenuOpen ? (
+              <X className="w-6 h-6 text-white" />
+            ) : (
+              <Menu className="w-6 h-6 text-white" />
+            )}
+          </button>
+        </div>
       </div>
 
       {/* 手機版：控制面板抽屜 */}

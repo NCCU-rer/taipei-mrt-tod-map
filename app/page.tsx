@@ -1,19 +1,50 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import MrtMap from "./components/MrtMap";
 import Footer from "./components/Footer";
+import WelcomeOverlay from "./components/WelcomeOverlay";
+import MethodModal from "./components/MethodModal";
+
+const STORAGE_KEY = "tod-map-welcome-dismissed";
 
 export default function Page() {
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [showMethod, setShowMethod] = useState(false);
+
+  // Only run on client — check localStorage to decide if overlay should show
+  useEffect(() => {
+    const dismissed = localStorage.getItem(STORAGE_KEY);
+    if (!dismissed) {
+      setShowOverlay(true);
+    }
+  }, []);
+
   return (
-    // 1. 移除 h-screen 與 overflow-hidden，改用 min-h-screen 允許捲動
     <main className="flex flex-col w-full min-h-screen bg-[#f9fafb]">
-      {/* 2. 地圖區域：強制設定高度為 100dvh (100% 視窗高度) 
-          這樣地圖會剛好佔滿一開始的畫面 */}
+      {/* Map — always full-screen */}
       <div className="w-full h-[100dvh] relative">
-        <MrtMap />
+        <MrtMap onOpenMethod={() => setShowMethod(true)} />
       </div>
 
-      {/* 3. Footer 區域：會自然排在地圖下方
-          使用者需要「往下滑」超過 100vh 的地圖才會看到它 */}
       <Footer />
+
+      {/* Welcome overlay (rendered on top via fixed positioning) */}
+      {showOverlay && (
+        <WelcomeOverlay
+          onClose={() => setShowOverlay(false)}
+          onOpenMethod={() => {
+            setShowOverlay(false);
+            setShowMethod(true);
+          }}
+        />
+      )}
+
+      {/* Method modal */}
+      {showMethod && (
+        <MethodModal onClose={() => setShowMethod(false)} />
+      )}
     </main>
   );
 }
+
