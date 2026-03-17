@@ -134,9 +134,9 @@ const StationNode: React.FC<StationNodeProps> = ({
     selectedLine === "all"
       ? stationColors
       : stationColors.filter((c) => {
-          const lineId = LINES.find((l) => l.color === c)?.id;
-          return lineId === selectedLine;
-        });
+        const lineId = LINES.find((l) => l.color === c)?.id;
+        return lineId === selectedLine;
+      });
 
   const finalColors =
     displayColors.length > 0 ? displayColors : [getLineColor(station.id)];
@@ -167,8 +167,8 @@ const StationNode: React.FC<StationNodeProps> = ({
     labelPosition === "left"
       ? "end"
       : labelPosition === "right" || labelPosition === "bottom-right"
-      ? "start"
-      : "middle";
+        ? "start"
+        : "middle";
 
   const gradientId = `gradient-${station.id}`;
   const comparisonColors = ["#003d82", "#0056b3", "#0072c6"];
@@ -223,8 +223,8 @@ const StationNode: React.FC<StationNodeProps> = ({
           isInComparison && comparisonIndex !== undefined
             ? comparisonColors[comparisonIndex]
             : finalColors.length > 1
-            ? `url(#${gradientId})`
-            : finalColors[0]
+              ? `url(#${gradientId})`
+              : finalColors[0]
         }
         strokeWidth={strokeWidth}
         style={{
@@ -589,10 +589,10 @@ export default function MrtMap() {
             </div>
             <div>
               <h1 className="text-lg font-bold text-white">
-                捷運 TOD 分析系統
+                台北捷運TOD生活圈地圖
               </h1>
               <p className="text-xs text-blue-100">
-                Transit-Oriented Development
+                比較各站通勤、機能與生活圈條件
               </p>
             </div>
           </div>
@@ -683,11 +683,10 @@ export default function MrtMap() {
             // 🔥 收起狀態：圓形按鈕
             <button
               onClick={() => setIsComparisonPanelOpen(true)}
-              className={`p-3 rounded-full shadow-lg border-2 transition-all hover:scale-110 ${
-                isComparisonMode
-                  ? "bg-[#003d82] border-[#003d82] text-white"
-                  : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
-              }`}
+              className={`p-3 rounded-full shadow-lg border-2 transition-all hover:scale-110 ${isComparisonMode
+                ? "bg-[#003d82] border-[#003d82] text-white"
+                : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
+                }`}
             >
               <ArrowUpDown className="w-5 h-5" />
               {isComparisonMode && comparisonStations.length > 0 && (
@@ -714,9 +713,8 @@ export default function MrtMap() {
               {/* 開關按鈕 */}
               <div className="flex items-center justify-center gap-2 mb-2">
                 <span
-                  className={`text-xs font-medium ${
-                    !isComparisonMode ? "text-gray-800" : "text-gray-400"
-                  }`}
+                  className={`text-xs font-medium ${!isComparisonMode ? "text-gray-800" : "text-gray-400"
+                    }`}
                 >
                   關
                 </span>
@@ -727,20 +725,17 @@ export default function MrtMap() {
                       setComparisonStations([]);
                     }
                   }}
-                  className={`relative w-12 h-6 rounded-full transition-colors ${
-                    isComparisonMode ? "bg-[#003d82]" : "bg-gray-300"
-                  }`}
+                  className={`relative w-12 h-6 rounded-full transition-colors ${isComparisonMode ? "bg-[#003d82]" : "bg-gray-300"
+                    }`}
                 >
                   <div
-                    className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                      isComparisonMode ? "translate-x-7" : "translate-x-1"
-                    }`}
+                    className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${isComparisonMode ? "translate-x-7" : "translate-x-1"
+                      }`}
                   />
                 </button>
                 <span
-                  className={`text-xs font-medium ${
-                    isComparisonMode ? "text-gray-800" : "text-gray-400"
-                  }`}
+                  className={`text-xs font-medium ${isComparisonMode ? "text-gray-800" : "text-gray-400"
+                    }`}
                 >
                   開
                 </span>
@@ -797,26 +792,23 @@ export default function MrtMap() {
                     <button
                       key={line.id}
                       onClick={() => handleLegendClick(line.id)}
-                      className={`flex items-center gap-2 transition-all duration-300 px-2 py-1.5 rounded ${
-                        selectedLine === line.id
-                          ? "bg-blue-50 ring-2 ring-blue-400 shadow-sm"
-                          : "hover:bg-gray-100"
-                      } ${
-                        selectedLine !== "all" && selectedLine !== line.id
+                      className={`flex items-center gap-2 transition-all duration-300 px-2 py-1.5 rounded ${selectedLine === line.id
+                        ? "bg-blue-50 ring-2 ring-blue-400 shadow-sm"
+                        : "hover:bg-gray-100"
+                        } ${selectedLine !== "all" && selectedLine !== line.id
                           ? "opacity-30"
                           : "opacity-100"
-                      }`}
+                        }`}
                     >
                       <span
                         className="w-3 h-3 rounded-full shadow-sm flex-shrink-0"
                         style={{ backgroundColor: line.color }}
                       ></span>
                       <span
-                        className={`text-xs font-medium ${
-                          selectedLine === line.id
-                            ? "text-blue-700 font-bold"
-                            : "text-gray-700"
-                        }`}
+                        className={`text-xs font-medium ${selectedLine === line.id
+                          ? "text-blue-700 font-bold"
+                          : "text-gray-700"
+                          }`}
                       >
                         {line.name}
                       </span>
@@ -826,11 +818,10 @@ export default function MrtMap() {
                 <div className="mt-3 pt-3 border-t border-gray-200">
                   <div className="flex items-center gap-2 text-xs text-gray-600">
                     <div
-                      className={`w-4 h-4 rounded-full flex items-center justify-center font-bold text-[10px] flex-shrink-0 ${
-                        displayMode === "tod"
-                          ? "bg-blue-100 text-[#003d82]"
-                          : "bg-red-100 text-[#c8102e]"
-                      }`}
+                      className={`w-4 h-4 rounded-full flex items-center justify-center font-bold text-[10px] flex-shrink-0 ${displayMode === "tod"
+                        ? "bg-blue-100 text-[#003d82]"
+                        : "bg-red-100 text-[#c8102e]"
+                        }`}
                     >
                       {displayMode === "tod" ? "T" : "$"}
                     </div>
@@ -873,26 +864,23 @@ export default function MrtMap() {
                   <button
                     key={line.id}
                     onClick={() => handleLegendClick(line.id)}
-                    className={`flex items-center gap-2 transition-all duration-300 px-2 py-1.5 rounded ${
-                      selectedLine === line.id
-                        ? "bg-blue-50 ring-2 ring-blue-300"
-                        : "hover:bg-gray-100"
-                    } ${
-                      selectedLine !== "all" && selectedLine !== line.id
+                    className={`flex items-center gap-2 transition-all duration-300 px-2 py-1.5 rounded ${selectedLine === line.id
+                      ? "bg-blue-50 ring-2 ring-blue-300"
+                      : "hover:bg-gray-100"
+                      } ${selectedLine !== "all" && selectedLine !== line.id
                         ? "opacity-30"
                         : "opacity-100"
-                    }`}
+                      }`}
                   >
                     <span
                       className="w-3 h-3 rounded-full shadow-sm flex-shrink-0"
                       style={{ backgroundColor: line.color }}
                     ></span>
                     <span
-                      className={`text-xs font-medium truncate ${
-                        selectedLine === line.id
-                          ? "text-blue-700 font-bold"
-                          : "text-gray-700"
-                      }`}
+                      className={`text-xs font-medium truncate ${selectedLine === line.id
+                        ? "text-blue-700 font-bold"
+                        : "text-gray-700"
+                        }`}
                     >
                       {line.name}
                     </span>
@@ -902,11 +890,10 @@ export default function MrtMap() {
               <div className="mt-2 pt-2 border-t border-gray-200">
                 <div className="flex items-center gap-2 text-xs text-gray-600">
                   <div
-                    className={`w-4 h-4 rounded-full flex items-center justify-center font-bold text-[10px] flex-shrink-0 ${
-                      displayMode === "tod"
-                        ? "bg-blue-100 text-[#003d82]"
-                        : "bg-red-100 text-[#c8102e]"
-                    }`}
+                    className={`w-4 h-4 rounded-full flex items-center justify-center font-bold text-[10px] flex-shrink-0 ${displayMode === "tod"
+                      ? "bg-blue-100 text-[#003d82]"
+                      : "bg-red-100 text-[#c8102e]"
+                      }`}
                   >
                     {displayMode === "tod" ? "T" : "$"}
                   </div>
@@ -1057,15 +1044,13 @@ export default function MrtMap() {
       {currentStationInfo && !isComparisonMode && (
         <>
           <div
-            className={`md:hidden fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${
-              isMobileInfoOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-            }`}
+            className={`md:hidden fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${isMobileInfoOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+              }`}
             onClick={() => setIsMobileInfoOpen(false)}
           />
           <div
-            className={`md:hidden fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl z-50 transition-transform duration-300 ${
-              isMobileInfoOpen ? "translate-y-0" : "translate-y-full"
-            }`}
+            className={`md:hidden fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl z-50 transition-transform duration-300 ${isMobileInfoOpen ? "translate-y-0" : "translate-y-full"
+              }`}
             style={{ maxHeight: "80vh" }}
           >
             <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between rounded-t-2xl">

@@ -30,7 +30,7 @@ export const INDICATORS = [
     key: "步行友善度", // ✅ 對應 raw.步行友善度
     icon: Footprints,
     description:
-      "評估站點周邊的人行道品質、步行環境安全性及無障礙設施完善度。數值越高表示步行環境越友善，適合行人活動。",
+      "走路是否安全、方便、舒適",
   },
   {
     id: "bike",
@@ -38,7 +38,7 @@ export const INDICATORS = [
     key: "自行車便利度", // ✅ 對應 raw.自行車便利度
     icon: Bike,
     description:
-      "衡量自行車道路網完整性、YouBike 站點密度及自行車停車設施。數值越高代表自行車使用越便利，有助於短程接駁。",
+      "是否適合以自行車或 YouBike 接駁",
   },
   {
     id: "street",
@@ -46,7 +46,7 @@ export const INDICATORS = [
     key: "街道連通度", // ✅ 對應 raw.街道連通度
     icon: Network,
     description:
-      "分析街道路網的連結性與可達性，評估區域內移動的便利程度。高連通度表示街道系統發達，移動選擇多元。",
+      "步行路線是否直接、不容易繞路",
   },
   {
     id: "transit",
@@ -54,7 +54,7 @@ export const INDICATORS = [
     key: "大眾運輸可達度", // ✅ 對應 raw.大眾運輸可達度
     icon: Bus,
     description:
-      "評估公車站點密度、路線多樣性及轉乘便利性。數值越高表示大眾運輸系統越完善，能有效減少私人運具依賴。",
+      "捷運、公車與轉乘是否方便",
   },
   {
     id: "life",
@@ -62,23 +62,23 @@ export const INDICATORS = [
     key: "生活機能多樣性", // ✅ 對應 raw.生活機能多樣性
     icon: ShoppingBag,
     description:
-      "衡量商店、餐飲、醫療、教育等生活服務設施的種類與密度。高分代表日常生活需求能在步行範圍內滿足。",
+      "日常採買、用餐與公共服務是否便利",
   },
   {
     id: "density",
-    label: "都市密度",
+    label: "都市區位",
     key: "都市密度強度", // ✅ 對應 raw.都市密度強度
     icon: Building2,
     description:
-      "評估建築密度、人口密度及土地使用強度。適當的都市密度能支撐大眾運輸系統，創造活躍的都市環境。",
+      "是否位於成熟且連續的都市發展區",
   },
   {
     id: "integration",
-    label: "區域整合",
+    label: "開發密度",
     key: "區域整合度", // ✅ 對應 raw.區域整合度
     icon: MapPinned,
     description:
-      "分析站點與周邊區域的整合程度，包含土地使用混合度及都市紋理連貫性。高整合度促進區域均衡發展。",
+      "周邊住宅、商業與活動是否集中",
   },
   {
     id: "lowcar",
@@ -86,7 +86,7 @@ export const INDICATORS = [
     key: "低汽車依賴度", // ✅ 對應 raw.低汽車依賴度
     icon: CarFront,
     description:
-      "評估減少私人汽車使用的環境條件，包含停車供給管制及替代運具可用性。數值越高表示越不需依賴私人汽車。",
+      "不開車是否也能便利生活",
   },
 ];
 
@@ -168,21 +168,19 @@ export default function ControlPanel({
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => setDisplayMode("tod")}
-              className={`px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                displayMode === "tod"
-                  ? "bg-[#003d82] text-white shadow-md"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
+              className={`px-4 py-3 rounded-lg text-sm font-medium transition-all ${displayMode === "tod"
+                ? "bg-[#003d82] text-white shadow-md"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
             >
               TOD 指數
             </button>
             <button
               onClick={() => setDisplayMode("price")}
-              className={`px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                displayMode === "price"
-                  ? "bg-[#c8102e] text-white shadow-md"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
+              className={`px-4 py-3 rounded-lg text-sm font-medium transition-all ${displayMode === "price"
+                ? "bg-[#c8102e] text-white shadow-md"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
             >
               房價 (萬/坪)
             </button>
@@ -275,11 +273,10 @@ export default function ControlPanel({
                 <button
                   key={indicator.id}
                   onClick={() => toggleIndicator(indicator.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all ${
-                    isSelected
-                      ? "bg-white shadow-sm border border-[#003d82]/20"
-                      : "bg-gray-50 hover:bg-white border border-transparent"
-                  }`}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all ${isSelected
+                    ? "bg-white shadow-sm border border-[#003d82]/20"
+                    : "bg-gray-50 hover:bg-white border border-transparent"
+                    }`}
                 >
                   {/* 勾選框 */}
                   {isSelected ? (
