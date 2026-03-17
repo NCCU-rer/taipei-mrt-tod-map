@@ -349,12 +349,18 @@ export default function RankingModal({
     }
   };
 
+  // 將 hex 顏色轉為含 alpha 的 8 位 hex（保留底色但淡化）
+  const hexWithAlpha = (hex: string, opacity: number): string => {
+    if (!hex.startsWith("#") || hex.length < 7) return hex;
+    const alpha = Math.round(opacity * 255).toString(16).padStart(2, "0");
+    return hex.slice(0, 7) + alpha;
+  };
+
   // 🔥 計算長條顏色（含比對模式的淡化邏輯）
   const getCellFill = (entry: ChartDataItem) => {
     // 1. 取得基礎顏色
     let baseColors: string[] = [];
     if (selectedLineFilter !== "all" && entry.lines) {
-      // 若有篩選路線，優先顯示該路線顏色
       const line = LINES.find((l) => l.id === selectedLineFilter);
       baseColors = [line?.color || entry.color];
     } else {
@@ -362,26 +368,23 @@ export default function RankingModal({
         entry.colors && entry.colors.length > 1 ? entry.colors : [entry.color];
     }
 
-    // 2. 判斷是否需要淡化 (Dimming)
-    // 規則：如果在比對模式下，且已選擇至少一個站點，則「未被選中的站點」要變淡
+    // 2. 無比對模式：直接用路線色
+    if (!comparisonMode || selectedStations.length === 0) {
+      return baseColors.length > 1 ? baseColors.join(",") : baseColors[0];
+    }
+
+    // 3. 比對模式下，已選站點顯示鮮豔色，未選站點顯示淡化版路線色
     const isSelected = selectedStations.includes(entry.stationId);
-    const shouldDim =
-      comparisonMode && selectedStations.length > 0 && !isSelected;
-
-    const finalColors = baseColors.map((c) => {
-      if (c.startsWith("#")) {
-        const r = parseInt(c.slice(1, 3), 16);
-        const g = parseInt(c.slice(3, 5), 16);
-        const b = parseInt(c.slice(5, 7), 16);
-        // 如果要淡化，透明度設為 0.2
-        return shouldDim ? `rgba(${r}, ${g}, ${b}, 0.2)` : c;
-      }
-      return c;
-    });
-
-    // 如果有多個顏色，組合成逗號分隔字串傳給 CustomBar
-    return finalColors.length > 1 ? finalColors.join(",") : finalColors[0];
+    if (isSelected) {
+      return baseColors.length > 1 ? baseColors.join(",") : baseColors[0];
+    } else {
+      // 使用 8 位 hex alpha（~28% 不透明），保留路線色調但降低突出感
+      // 不用 rgba() 以避免逗號被 CustomBar 誤視為多色分隔符
+      const dimColors = baseColors.map((c) => hexWithAlpha(c, 0.28));
+      return dimColors.length > 1 ? dimColors.join(",") : dimColors[0];
+    }
   };
+
 
   if (!isOpen) return null;
 

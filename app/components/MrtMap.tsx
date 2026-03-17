@@ -982,6 +982,7 @@ export default function MrtMap({ onOpenMethod }: MrtMapProps) {
               displayMode={displayMode}
               comparisonStations={comparisonStations}
               isComparisonMode={isComparisonMode}
+              selectedBuffer={selectedBuffer}
               onStationClick={handleStationClick}
             />
           </div>
