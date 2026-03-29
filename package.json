@@ -2,6 +2,7 @@
   "name": "tod-widget",
   "version": "0.1.0",
   "private": true,
+  "author": "Peng, Tsung-Chun <ablecck12@gmail.com> (https://github.com/Nody-Peng)",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

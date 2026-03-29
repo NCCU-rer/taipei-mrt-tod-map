@@ -27,67 +27,59 @@ import { AVAILABLE_YEARS } from "../data/todData";
 export const INDICATORS = [
   {
     id: "walk",
-    label: "步行友善",
+    label: "步行環境",
     key: "步行友善度", // ✅ 對應 raw.步行友善度
     icon: Footprints,
-    description:
-      "走路是否安全、方便、舒適",
+    description: "走路是否安全、方便、舒適",
   },
   {
     id: "bike",
     label: "自行車便利",
     key: "自行車便利度", // ✅ 對應 raw.自行車便利度
     icon: Bike,
-    description:
-      "是否適合以自行車或 YouBike 接駁",
+    description: "是否適合以自行車或YouBike接駁",
   },
   {
     id: "street",
     label: "街道連通",
     key: "街道連通度", // ✅ 對應 raw.街道連通度
     icon: Network,
-    description:
-      "步行路線是否直接、不容易繞路",
+    description: "步行路線是否直接、不容易繞路",
   },
   {
     id: "transit",
-    label: "大眾運輸",
+    label: "大眾運輸便利",
     key: "大眾運輸可達度", // ✅ 對應 raw.大眾運輸可達度
     icon: Bus,
-    description:
-      "捷運、公車與轉乘是否方便",
+    description: "捷運、公車與轉乘是否方便。此欄位僅供展示，不納入總分。",
   },
   {
     id: "life",
     label: "生活機能",
     key: "生活機能多樣性", // ✅ 對應 raw.生活機能多樣性
     icon: ShoppingBag,
-    description:
-      "日常採買、用餐與公共服務是否便利",
+    description: "日常採買、用餐與公共服務是否便利",
   },
   {
     id: "density",
     label: "都市區位",
     key: "都市密度強度", // ✅ 對應 raw.都市密度強度
     icon: Building2,
-    description:
-      "是否位於成熟且連續的都市發展區",
+    description: "是否位於成熟且連續的都市發展區",
   },
   {
     id: "integration",
     label: "開發密度",
     key: "區域整合度", // ✅ 對應 raw.區域整合度
     icon: MapPinned,
-    description:
-      "周邊住宅、商業與活動是否集中",
+    description: "周邊住宅、商業與活動是否集中。此指標屬於較穩定的空間結構特徵，因此不同站點之間的差異較小。",
   },
   {
     id: "lowcar",
     label: "低汽車依賴",
     key: "低汽車依賴度", // ✅ 對應 raw.低汽車依賴度
     icon: CarFront,
-    description:
-      "不開車是否也能便利生活",
+    description: "不開車是否也能便利生活",
   },
 ];
 

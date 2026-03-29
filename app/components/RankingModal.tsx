@@ -443,9 +443,14 @@ export default function RankingModal({
           {/* pb-24 是為了預留底部懸浮底座的空間，避免內容被遮擋 */}
           <div className="flex-1 overflow-y-auto p-3 md:p-6 bg-gray-50 pb-24 relative">
             {/* 指標資訊 */}
-            <div className="mb-4 p-3 bg-white rounded-lg border border-gray-100 shadow-sm flex items-start gap-2">
-              <Info className="w-4 h-4 text-[#003d82] mt-0.5 flex-shrink-0" />
-              <div className="text-xs text-gray-600">
+            <div className="mb-4 p-3 bg-white rounded-lg border border-gray-100 shadow-sm flex flex-col gap-2">
+              <div className="flex items-start gap-2">
+                <Info className="w-4 h-4 text-[#003d82] mt-0.5 flex-shrink-0" />
+                <div className="text-xs text-gray-600 leading-relaxed">
+                  <span className="font-bold">站點排名：</span>本排序反映站區周邊之TOD綜合條件，著重步行、自行車、街道連通、混合使用、密度與空間整合等構面，不等同於捷運轉乘規模、商業知名度或房價高低排名。
+                </div>
+              </div>
+              <div className="flex items-start gap-2 ml-6 text-xs text-gray-600">
                 當前排序指標：
                 <span className="font-bold text-[#003d82]">
                   {indicatorLabels.join("、")}

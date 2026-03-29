@@ -36,37 +36,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { StationData } from "../types/mrt";
-
-// 🔥 站點詳細資料類型
-interface StationDetails {
-  score: number;
-  count: number | null;
-  price: number | null;
-  radar: Array<{
-    subject: string;
-    value: number;
-  }>;
-  raw: {
-    步行友善度: number;
-    自行車便利度: number;
-    街道連通度: number;
-    大眾運輸可達度: number;
-    生活機能多樣性: number;
-    都市密度強度: number;
-    區域整合度: number;
-    低汽車依賴度: number;
-  };
-  normalized: {
-    步行友善度: number;
-    自行車便利度: number;
-    街道連通度: number;
-    大眾運輸可達度: number;
-    生活機能多樣性: number;
-    都市密度強度: number;
-    區域整合度: number;
-    低汽車依賴度: number;
-  };
-}
+import { TODDetailData as StationDetails } from "../data/todDetails";
 
 interface ComparisonStation {
   station: StationData;

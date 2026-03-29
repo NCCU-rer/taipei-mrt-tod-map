@@ -7,7 +7,7 @@ import dynamic from "next/dynamic";
 import { StationData } from "../types/mrt";
 import { STATIONS } from "../data/stations";
 import { TOD_DATA, AVAILABLE_YEARS } from "../data/todData";
-import { TOD_DETAILS } from "../data/todDetails";
+import { TOD_DETAILS, TODDetailData as StationDetails } from "../data/todDetails";
 import { LINES, getLineColor, getLineColors } from "../data/lines";
 
 // 導入組件
@@ -34,37 +34,6 @@ import {
 
 // 顯示模式
 type DisplayMode = "tod" | "price";
-
-// 🔥 站點詳細資料類型
-interface StationDetails {
-  score: number;
-  count: number | null;
-  price: number | null;
-  radar: Array<{
-    subject: string;
-    value: number;
-  }>;
-  raw: {
-    步行友善度: number;
-    自行車便利度: number;
-    街道連通度: number;
-    大眾運輸可達度: number;
-    生活機能多樣性: number;
-    都市密度強度: number;
-    區域整合度: number;
-    低汽車依賴度: number;
-  };
-  normalized: {
-    步行友善度: number;
-    自行車便利度: number;
-    街道連通度: number;
-    大眾運輸可達度: number;
-    生活機能多樣性: number;
-    都市密度強度: number;
-    區域整合度: number;
-    低汽車依賴度: number;
-  };
-}
 
 // 🔥 比對站點資料類型
 interface ComparisonStation {
@@ -414,6 +383,7 @@ export default function MrtMap({ onOpenMethod }: MrtMapProps) {
       return details.score;
     } else {
       const selectedValues = selectedIndicators
+        .filter((id) => id !== "transit") // 🔥 大眾運輸不納入總分
         .map((id) => {
           const indicator = INDICATORS.find((i) => i.id === id);
           if (!indicator) return null;
@@ -614,11 +584,11 @@ export default function MrtMap({ onOpenMethod }: MrtMapProps) {
               <Train className="w-6 h-6 text-[#003d82]" />
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-sm font-bold text-white leading-tight truncate">
-                台北捷運TOD生活圈地圖
+              <h1 className="text-sm md:text-base font-bold text-white leading-snug break-words">
+                台北捷運生活圈與房價比較地圖
               </h1>
-              <p className="text-xs text-blue-100 leading-tight">
-                比較各站通勤、機能與生活圈條件
+              <p className="text-xs text-blue-100 leading-tight mt-1">
+                以TOD指標衡量生活便利性，並分析房價分布
               </p>
             </div>
             {onOpenMethod && (

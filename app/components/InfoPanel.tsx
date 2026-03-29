@@ -28,6 +28,7 @@ import {
   LucideIcon,
 } from "lucide-react";
 import { StationData } from "../types/mrt";
+import { TODDetailData as StationDetails } from "../data/todDetails";
 
 // 雷達圖標籤對應圖示
 const getRadarIcon = (subject: string): LucideIcon => {
@@ -46,36 +47,6 @@ const getRadarIcon = (subject: string): LucideIcon => {
 interface RadarDataItem {
   subject: string;
   value: number;
-}
-
-// 🔥 修正型別定義
-interface StationDetails {
-  score: number; // TOD整體分數
-  count: number | null;
-  price: number | null;
-  radar: RadarDataItem[];
-  raw: {
-    // 原始數據
-    步行友善度: number;
-    自行車便利度: number;
-    街道連通度: number;
-    大眾運輸可達度: number;
-    生活機能多樣性: number;
-    都市密度強度: number;
-    區域整合度: number;
-    低汽車依賴度: number;
-  };
-  normalized: {
-    // 標準化數據 (0-1)
-    步行友善度: number;
-    自行車便利度: number;
-    街道連通度: number;
-    大眾運輸可達度: number;
-    生活機能多樣性: number;
-    都市密度強度: number;
-    區域整合度: number;
-    低汽車依賴度: number;
-  };
 }
 
 interface StationInfo extends StationData {

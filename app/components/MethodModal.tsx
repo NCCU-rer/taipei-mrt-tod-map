@@ -8,14 +8,14 @@ interface MethodModalProps {
 }
 
 const INDICATORS = [
-    { icon: Footprints, label: "步行友善度", desc: "站點周邊的步行道完整性、行人空間品質與步行連結條件。" },
-    { icon: Bike, label: "自行車便利度", desc: "YouBike 站點密度與自行車道覆蓋，反映非機動車輛的便利性。" },
-    { icon: GitBranch, label: "街道連通度", desc: "道路網格的交叉口密度，越高代表選路彈性越好、步行環境越友善。" },
-    { icon: Train, label: "大眾運輸可達度", desc: "捷運與公車路線密度及班次頻率，衡量換乘與接駁的便利程度。" },
-    { icon: ShoppingBag, label: "生活機能多樣性", desc: "商業、餐飲、醫療、教育等日常設施的種類與數量豐富程度。" },
-    { icon: Building2, label: "都市密度強度", desc: "人口密度與建築量體，密度高代表土地使用效率佳，支持公共運輸發展。" },
-    { icon: Globe, label: "區域整合度", desc: "站點在路網中的中心性與可達性，反映該站在都市空間中的連結位置。" },
-    { icon: Car, label: "低汽車依賴度", desc: "停車場密度的反向指標；停車設施越少，代表該區域越不依賴私人汽車。" },
+    { icon: Footprints, label: "步行環境", desc: "走路是否安全、方便、舒適" },
+    { icon: Bike, label: "自行車便利", desc: "是否適合以自行車或YouBike接駁" },
+    { icon: GitBranch, label: "街道連通", desc: "步行路線是否直接、不容易繞路" },
+    { icon: Train, label: "大眾運輸便利", desc: "捷運、公車與轉乘是否方便。此欄位僅供展示，不納入總分。" },
+    { icon: ShoppingBag, label: "生活機能", desc: "日常採買、用餐與公共服務是否便利" },
+    { icon: Building2, label: "開發密度", desc: "周邊住宅、商業與活動是否集中。此指標屬於較穩定的空間結構特徵，因此不同站點之間的差異較小。" },
+    { icon: Globe, label: "都市區位", desc: "是否位於成熟且連續的都市發展區" },
+    { icon: Car, label: "低汽車依賴", desc: "不開車是否也能便利生活" },
 ];
 
 export default function MethodModal({ onClose }: MethodModalProps) {
