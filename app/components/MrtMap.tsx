@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 // 導入類型與資料
 import { StationData } from "../types/mrt";
 import { STATIONS } from "../data/stations";
-import { TOD_DATA } from "../data/todData";
+import { TOD_DATA, AVAILABLE_YEARS } from "../data/todData";
 import { TOD_DETAILS } from "../data/todDetails";
 import { LINES, getLineColor, getLineColors } from "../data/lines";
 
@@ -350,7 +350,7 @@ export default function MrtMap({ onOpenMethod }: MrtMapProps) {
   const [selectedStationId, setSelectedStationId] = useState<string | null>(
     "R10"
   );
-  const [selectedYear, setSelectedYear] = useState<string>("112");
+  const [selectedYear, setSelectedYear] = useState<string>(AVAILABLE_YEARS[0] || "114");
   const [selectedBuffer, setSelectedBuffer] = useState<string>("300");
   const [selectedLine, setSelectedLine] = useState<string>("all");
   const [displayMode, setDisplayMode] = useState<DisplayMode>("tod");

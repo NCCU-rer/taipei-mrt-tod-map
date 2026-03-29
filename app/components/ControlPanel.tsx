@@ -21,6 +21,7 @@ import {
   X,
 } from "lucide-react";
 import { LINES } from "../data/lines";
+import { AVAILABLE_YEARS } from "../data/todData";
 
 // 🔥 8項指標定義（確保 key 與 todDetails.ts 的 raw 欄位一致）
 export const INDICATORS = [
@@ -200,9 +201,11 @@ export default function ControlPanel({
             onChange={(e) => setSelectedYear(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003d82] focus:border-transparent"
           >
-            <option value="112">112 年度 (2023)</option>
-            <option value="111">111 年度 (2022)</option>
-            <option value="110">110 年度 (2021)</option>
+            {AVAILABLE_YEARS.map((year) => (
+              <option key={year} value={year}>
+                {year} 年度 ({Number(year) + 1911})
+              </option>
+            ))}
           </select>
         </div>
 
