@@ -384,7 +384,7 @@ export default function ComparisonModal({
                           tick={{ fontSize: 11, fill: "#6b7280" }}
                         />
                         <Tooltip />
-                        <Bar dataKey="score" radius={[8, 8, 0, 0]}>
+                        <Bar dataKey="score" radius={[8, 8, 0, 0]} maxBarSize={48}>
                           {barData.map((entry, index) => (
                             <Cell
                               key={`score-cell-${index}`}
@@ -425,7 +425,7 @@ export default function ComparisonModal({
                             tick={{ fontSize: 11, fill: "#6b7280" }}
                           />
                           <Tooltip />
-                          <Bar dataKey="price" radius={[8, 8, 0, 0]}>
+                          <Bar dataKey="price" radius={[8, 8, 0, 0]} maxBarSize={48}>
                             {barData.map((entry, index) => (
                               <Cell
                                 key={`price-cell-${index}`}
