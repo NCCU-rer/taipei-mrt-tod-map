@@ -67,6 +67,7 @@ interface CustomBarProps {
   width?: number;
   height?: number;
   payload?: ChartDataItem;
+  isDimmed?: boolean;
   [key: string]: unknown;
 }
 
@@ -116,9 +117,9 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload }) => {
   );
 };
 
-// 🔥 自訂長條圖形狀 (支援單色與雙色分割)
+// 🔥 自訂長條圖形狀 (透亮低彩度背景 + 高飽和粗邊框設計)
 const CustomBar: React.FC<CustomBarProps> = (props) => {
-  const { fill, x, y, width, height } = props;
+  const { fill, x, y, width, height, isDimmed } = props;
 
   if (
     !fill ||
@@ -146,12 +147,18 @@ const CustomBar: React.FC<CustomBarProps> = (props) => {
   if (filteredColors.length === 0) return null;
 
   const radius = 8; // 圓角大小
+  const opacityVal = isDimmed ? 0.25 : 1; // 處理比對模式淡化
+  
+  // 使用者大推的作法：很透明的實體內部填色 + 飽和的粗邊緣線
+  const fillAlpha = 0.15; 
+  const strokeW = 2.5;
 
   // 雙色處理 (轉乘站)
   if (filteredColors.length === 2) {
     const halfWidth = width / 2;
     return (
-      <g>
+      <g opacity={opacityVal} style={{ transition: "opacity 0.3s ease" }}>
+        {/* 左半部分 (僅填色) */}
         <path
           d={`
             M ${x} ${y + height}
@@ -162,7 +169,10 @@ const CustomBar: React.FC<CustomBarProps> = (props) => {
             Z
           `}
           fill={filteredColors[0]}
+          fillOpacity={fillAlpha}
+          stroke="none"
         />
+        {/* 右半部分 (僅填色) */}
         <path
           d={`
             M ${x + halfWidth} ${y}
@@ -173,24 +183,58 @@ const CustomBar: React.FC<CustomBarProps> = (props) => {
             Z
           `}
           fill={filteredColors[1]}
+          fillOpacity={fillAlpha}
+          stroke="none"
+        />
+        
+        {/* 左半部分外框 (去除 Z 結尾，不描繪中間切割線) */}
+        <path
+          d={`
+            M ${x + halfWidth} ${y + height}
+            L ${x} ${y + height}
+            L ${x} ${y + radius}
+            Q ${x} ${y} ${x + radius} ${y}
+            L ${x + halfWidth} ${y}
+          `}
+          fill="none"
+          stroke={filteredColors[0]}
+          strokeWidth={strokeW}
+        />
+        {/* 右半部分外框 (去除 Z 結尾，不描繪中間切割線) */}
+        <path
+          d={`
+            M ${x + halfWidth} ${y}
+            L ${x + width - radius} ${y}
+            Q ${x + width} ${y} ${x + width} ${y + radius}
+            L ${x + width} ${y + height}
+            L ${x + halfWidth} ${y + height}
+          `}
+          fill="none"
+          stroke={filteredColors[1]}
+          strokeWidth={strokeW}
         />
       </g>
     );
   } else {
     // 單色處理
     return (
-      <path
-        d={`
-          M ${x} ${y + height}
-          L ${x} ${y + radius}
-          Q ${x} ${y} ${x + radius} ${y}
-          L ${x + width - radius} ${y}
-          Q ${x + width} ${y} ${x + width} ${y + radius}
-          L ${x + width} ${y + height}
-          Z
-        `}
-        fill={filteredColors[0]}
-      />
+      <g opacity={opacityVal} style={{ transition: "opacity 0.3s ease" }}>
+        <path
+          d={`
+            M ${x} ${y + height}
+            L ${x} ${y + radius}
+            Q ${x} ${y} ${x + radius} ${y}
+            L ${x + width - radius} ${y}
+            Q ${x + width} ${y} ${x + width} ${y + radius}
+            L ${x + width} ${y + height}
+            Z
+          `}
+          fill={filteredColors[0]}
+          fillOpacity={fillAlpha}
+          stroke={filteredColors[0]}
+          strokeWidth={strokeW}
+        />
+      </g>
     );
   }
 };
@@ -349,40 +393,19 @@ export default function RankingModal({
     }
   };
 
-  // 將 hex 顏色轉為含 alpha 的 8 位 hex（保留底色但淡化）
-  const hexWithAlpha = (hex: string, opacity: number): string => {
-    if (!hex.startsWith("#") || hex.length < 7) return hex;
-    const alpha = Math.round(opacity * 255).toString(16).padStart(2, "0");
-    return hex.slice(0, 7) + alpha;
-  };
-
-  // 🔥 計算長條顏色（含比對模式的淡化邏輯）
+  // 🔥 計算長條顏色
   const getCellFill = (entry: ChartDataItem) => {
     // 1. 取得基礎顏色
-    let baseColors: string[] = [];
+    let rawColors: string[] = [];
     if (selectedLineFilter !== "all" && entry.lines) {
       const line = LINES.find((l) => l.id === selectedLineFilter);
-      baseColors = [line?.color || entry.color];
+      rawColors = [line?.color || entry.color];
     } else {
-      baseColors =
+      rawColors =
         entry.colors && entry.colors.length > 1 ? entry.colors : [entry.color];
     }
 
-    // 2. 無比對模式：直接用路線色
-    if (!comparisonMode || selectedStations.length === 0) {
-      return baseColors.length > 1 ? baseColors.join(",") : baseColors[0];
-    }
-
-    // 3. 比對模式下，已選站點顯示鮮豔色，未選站點顯示淡化版路線色
-    const isSelected = selectedStations.includes(entry.stationId);
-    if (isSelected) {
-      return baseColors.length > 1 ? baseColors.join(",") : baseColors[0];
-    } else {
-      // 使用 8 位 hex alpha（~28% 不透明），保留路線色調但降低突出感
-      // 不用 rgba() 以避免逗號被 CustomBar 誤視為多色分隔符
-      const dimColors = baseColors.map((c) => hexWithAlpha(c, 0.28));
-      return dimColors.length > 1 ? dimColors.join(",") : dimColors[0];
-    }
+    return rawColors.length > 1 ? rawColors.join(",") : rawColors[0];
   };
 
 
@@ -505,6 +528,7 @@ export default function RankingModal({
                     </span>
                   )}
                 </h3>
+
                 {/* 翻頁器 (縮小版) */}
                 <div className="flex items-center gap-2">
                   <button
@@ -533,9 +557,9 @@ export default function RankingModal({
                     <ComposedChart
                       data={chartData}
                       margin={{
-                        top: 20,
-                        right: isMobile ? 0 : 20,
-                        left: 0,
+                        top: 35,
+                        right: isMobile ? 15 : 25,
+                        left: 15,
                         bottom: 60,
                       }}
                     >
@@ -557,6 +581,7 @@ export default function RankingModal({
                         axisLine={false}
                         tickLine={false}
                         tick={{ fontSize: 11, fill: "#9ca3af" }}
+                        label={{ value: "TOD 綜合分數", position: "top", offset: 20, fill: "#003d82", fontSize: 12, fontWeight: 700 }}
                       />
                       <YAxis
                         yAxisId="right"
@@ -564,6 +589,7 @@ export default function RankingModal({
                         axisLine={false}
                         tickLine={false}
                         tick={{ fontSize: 11, fill: "#9ca3af" }}
+                        label={{ value: "周邊房價(萬/坪)", position: "top", offset: 20, fill: "#a1a1aa", fontSize: 12, fontWeight: 700 }}
                       />
                       <Tooltip
                         content={<CustomTooltip />}
@@ -574,28 +600,28 @@ export default function RankingModal({
                       <Bar
                         yAxisId="left"
                         dataKey="score"
+                        name="TOD 綜合分數"
                         cursor={comparisonMode ? "cell" : "pointer"} // 游標樣式變化
                         onClick={(data: any) => {
                           if (data?.payload?.stationId)
                             handleStationSelect(data.payload.stationId);
                         }}
                         shape={<CustomBar />}
+                        maxBarSize={48} // 🔥 限制最大寬度，保留呼吸空間與質感
                       >
-                        {chartData.map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={getCellFill(entry)}
-                            stroke={
-                              selectedStations.includes(entry.stationId)
-                                ? "#000"
-                                : "none"
-                            }
-                            strokeWidth={
-                              selectedStations.includes(entry.stationId) ? 2 : 0
-                            }
-                            style={{ transition: "fill 0.3s ease" }} // 增加顏色過渡動畫
-                          />
-                        ))}
+                        {chartData.map((entry, index) => {
+                          const isDimmed = comparisonMode && selectedStations.length > 0 && !selectedStations.includes(entry.stationId);
+                          return (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={getCellFill(entry)}
+                              isDimmed={isDimmed}
+                              stroke={selectedStations.includes(entry.stationId) ? "#000" : "none"}
+                              strokeWidth={selectedStations.includes(entry.stationId) ? 2 : 0}
+                              style={{ transition: "all 0.3s ease" }}
+                            />
+                          );
+                        })}
                       </Bar>
 
                       {/* 房價折線 */}
@@ -603,10 +629,12 @@ export default function RankingModal({
                         yAxisId="right"
                         type="monotone"
                         dataKey="priceValue"
-                        stroke="#374151"
-                        strokeWidth={2}
-                        dot={{ fill: "#374151", r: 3 }}
-                        activeDot={{ r: 5 }}
+                        name="周邊房價 (萬/坪)"
+                        stroke="#475569" // 質感金屬深灰 (slate-600)
+                        strokeWidth={2.5}
+                        dot={{ fill: "#ffffff", stroke: "#475569", strokeWidth: 2, r: 4 }} // 高級空心圓點
+                        activeDot={{ r: 6, fill: "#475569", stroke: "#ffffff", strokeWidth: 2 }}
+                        style={{ filter: "drop-shadow(0px 3px 3px rgba(0,0,0,0.15))" }} // 微弱陰影增加立體漂浮感
                         opacity={comparisonMode ? 0.3 : 1} // 比對模式下淡化折線，專注於選站
                       />
                     </ComposedChart>
