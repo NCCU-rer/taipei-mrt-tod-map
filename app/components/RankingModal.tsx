@@ -67,7 +67,7 @@ interface CustomBarProps {
   width?: number;
   height?: number;
   payload?: ChartDataItem;
-  isDimmed?: boolean;
+  fillOpacity?: number | string;
   [key: string]: unknown;
 }
 
@@ -119,7 +119,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload }) => {
 
 // 🔥 自訂長條圖形狀 (透亮低彩度背景 + 高飽和粗邊框設計)
 const CustomBar: React.FC<CustomBarProps> = (props) => {
-  const { fill, x, y, width, height, isDimmed } = props;
+  const { fill, x, y, width, height, fillOpacity } = props;
 
   if (
     !fill ||
@@ -147,7 +147,7 @@ const CustomBar: React.FC<CustomBarProps> = (props) => {
   if (filteredColors.length === 0) return null;
 
   const radius = 8; // 圓角大小
-  const opacityVal = isDimmed ? 0.25 : 1; // 處理比對模式淡化
+  const opacityVal = fillOpacity !== undefined ? Number(fillOpacity) : 1; // 處理比對模式淡化
   
   // 使用者大推的作法：很透明的實體內部填色 + 飽和的粗邊緣線
   const fillAlpha = 0.15; 
@@ -463,8 +463,8 @@ export default function RankingModal({
           </div>
 
           {/* 內容區 - 可捲動 */}
-          {/* pb-24 是為了預留底部懸浮底座的空間，避免內容被遮擋 */}
-          <div className="flex-1 overflow-y-auto p-3 md:p-6 bg-gray-50 pb-24 relative">
+          {/* 透過外部 Footer 擠壓空間，不再需要預留 pb-24，保證滾動到底必能顯示全圖 */}
+          <div className="flex-1 overflow-y-auto p-3 md:p-6 bg-gray-50 relative">
             {/* 指標資訊 */}
             <div className="mb-4 p-3 bg-white rounded-lg border border-gray-100 shadow-sm flex flex-col gap-2">
               <div className="flex items-start gap-2">
@@ -615,7 +615,7 @@ export default function RankingModal({
                             <Cell
                               key={`cell-${index}`}
                               fill={getCellFill(entry)}
-                              isDimmed={isDimmed}
+                              fillOpacity={isDimmed ? 0.25 : 1}
                               stroke={selectedStations.includes(entry.stationId) ? "#000" : "none"}
                               strokeWidth={selectedStations.includes(entry.stationId) ? 2 : 0}
                               style={{ transition: "all 0.3s ease" }}
@@ -649,9 +649,10 @@ export default function RankingModal({
             </div>
           </div>
 
-          {/* 🔥 懸浮操作底座 (Floating Dock) - 僅在比對模式顯示 */}
+          {/* 🔥 懸浮操作底座 (改為 Flex 實體 Footer，強制擠壓空間保證絕對不遮擋圖表) */}
           {comparisonMode && (
-            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] md:w-[600px] bg-white rounded-2xl shadow-xl border border-gray-200 p-4 animate-in slide-in-from-bottom-10 fade-in duration-300 z-10 flex flex-col gap-3">
+            <div className="shrink-0 w-full bg-gray-50 border-t border-gray-200/60 pb-5 pt-3 flex justify-center shadow-[0_-15px_30px_-15px_rgba(0,0,0,0.05)] z-20">
+              <div className="w-[92%] md:w-[600px] bg-white rounded-2xl shadow-[0_5px_20px_rgba(0,0,0,0.08)] ring-1 ring-black/5 p-4 animate-in slide-in-from-bottom-6 fade-in duration-300 flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="flex items-center justify-center w-6 h-6 bg-[#003d82] text-white rounded-full text-xs font-bold">
@@ -719,6 +720,7 @@ export default function RankingModal({
                   開始比對 ({selectedStations.length}/3)
                 </button>
               </div>
+            </div>
             </div>
           )}
         </div>
